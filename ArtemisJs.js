@@ -228,7 +228,9 @@ var bag = function (capacity) {
     isIndexWithinBounds: isIndexWithinBounds,
     isEmpty: isEmpty
   };
-};/**
+};
+
+/**
  * Bitset implementation based on https://github.com/inexplicable/bitset
  */
 function bitSet() {
@@ -438,7 +440,9 @@ function bitSet() {
     isEmpty: isEmpty,
     toString: toString
   };
-}if (!Math.signum) {
+}
+
+if (!Math.signum) {
 	Math.signum = function (x) {
 		return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
 	};
@@ -477,7 +481,9 @@ var FastMath = {
 	atan: function (x) {
 		return (Math.abs(x) < 1) ? x / (1 + this._atan_a * x * x) : Math.signum(x) * this.HALF_PI - x / (x * x + this._atan_a);
 	}
-};d8.timer = {
+};
+
+var timer = {
   _delay: 0,
   _repeat: false,
   _acc: 0,
@@ -540,7 +546,9 @@ var FastMath = {
   getDelay: function getDelay() {
     return this._delay;
   }
-};function uuid() {
+};
+
+function uuid() {
   var uuid4 = "", i, random;
   for (i = 0; i < 32; i++) {
     random = Math.random() * 16 | 0;
@@ -551,29 +559,36 @@ var FastMath = {
     uuid4 += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
   }
   return uuid4;
-}/**
+}
+
+/**
  * An Aspects is used by systems as a matcher against entities, to check if a system is
  * interested in an entity. Aspects define what sort of component types an entity must
  * possess, or not possess.
  *
- * This creates an aspect where an entity must possess A and B and C:
- * Aspect.getAspectForAll(A.class, B.class, C.class)
+ * This creates an aspect where an entity must possess component Type A and B and C:
+ * Aspect.getAspectForAll(componentType_A, componentType_B, componentType_C)
  *
- * This creates an aspect where an entity must possess A and B and C, but must not possess U or V.
- * Aspect.getAspectForAll(A.class, B.class, C.class).exclude(U.class, V.class)
+ * This creates an aspect where an entity must possess component Type A and B and C, but must not possess U or V.
+ * Aspect.getAspectForAll(componentType_A, componentType_B, componentType_C)
+ *    .exclude(componentType_U, componentType_V)
  *
  * This creates an aspect where an entity must possess A and B and C, but must not possess U or V, but must possess one of X or Y or Z.
- * Aspect.getAspectForAll(A.class, B.class, C.class).exclude(U.class, V.class).one(X.class, Y.class, Z.class)
+ * Aspect.getAspectForAll(componentType_A, componentType_B, componentType_C)
+ *    .exclude(componentType_U, componentType_V)
+ *    .one(componentType_X, componentType_Y, componentType_Z)
  *
  * You can create and compose aspects in many ways:
- * Aspect.getEmpty().one(X.class, Y.class, Z.class).all(A.class, B.class, C.class).exclude(U.class, V.class)
+ * Aspect.getEmpty().one(componentType_X, componentType_Y, componentType_Z)
+ *    .all(componentType_A, componentType_B, componentType_C)
+ *    .exclude(componentType_U, componentType_V)
  * is the same as:
- * Aspect.getAspectForAll(A.class, B.class, C.class).exclude(U.class, V.class).one(X.class, Y.class, Z.class)
- *
- * @author Arni Arent
+ * Aspect.getAspectForAll(componentType_A, componentType_B, componentType_C)
+ *    .exclude(componentType_U, componentType_V)
+ *    .one(componentType_X, componentType_Y, componentType_Z)
  *
  */
-d8.Aspect = (function () {
+var Aspect = (function () {
   var aspectClosure = function () {
     var allSet = bitSet();
     var exclusionSet = bitSet();
@@ -581,7 +596,7 @@ d8.Aspect = (function () {
 
     function setBits(bitset, types) {
       for (var i = 0; i < types.length; i++) {
-        bitset.set(d8.ComponentType.getIndexFor(types[i]));
+        bitset.set(ComponentType.getIndexFor(types[i]));
       }
     }
 
@@ -679,20 +694,20 @@ d8.Aspect = (function () {
       return createAspect();
     }
   };
-})();this.d8 = Object.create(null);
+})();
 
 /**
  * base prototype to be extended
  * @type {prototype|*}
  */
-d8.base = Object.create(Object.prototype);
+var base = Object.create(Object.prototype);
 
 /**
  * Extend this object with one or more objects.
  * Copy all property to extending object (concatenation)
  * If private members are needed, use blueprint/closure
  */
-Object.defineProperty(d8.base, "extend", {
+Object.defineProperty(base, "extend", {
   value: function () {
     var hasOwnProperty = Object.hasOwnProperty;
     var object = Object.create(this);
@@ -716,81 +731,24 @@ Object.defineProperty(d8.base, "extend", {
   writable: true
 });
 
-
-//<editor-fold desc="Example">
-var Rectangle = d8.base.extend({
-  create: function (w, h) {
-    var self = Object.create(this);
-    self.height = h;
-    self.width = w;
-    return self;
-  },
-  area: function () {
-    return this.width * this.height;
-  }
-});
-
-r1 = Rectangle.create(4, 5);
-
-// closure - extension with private members
-function eventEmitter() {
-  var events = Object.create(null);
-
-  this.on = function (event, listener) {
-    if (typeof events[event] !== "undefined")
-      events[event].push(listener);
-    else events[event] = [listener];
-  };
-  this.emit = function (event) {
-    if (typeof events[event] !== "undefined") {
-      var listeners = events[event];
-      var length = listeners.length, index = length;
-      var args = Array.prototype.slice.call(arguments, 1);
-
-      while (index) {
-        var listener = listeners[length - (index--)];
-        listener.apply(this, args);
-      }
-    }
-  };
-}
-
-var Square = Rectangle.extend({
-  create: function (s) {
-    var self = Rectangle.create.call(this, s, s);
-    eventEmitter.call(self);
-    return self;
-  },
-  resize: function (newSize) {
-    var oldSize = this.width;
-    this.width = this.height = newSize;
-    this.emit("resize", oldSize, newSize);
-  }
-});
-
-s1 = Square.create(3);
-
-s1.on("resize", function (oldSize, newSize) {
-  console.log("sq resized from " + oldSize + " to " + newSize + ".");
-});
-//</editor-fold>
 /**
  * A tag class. All components in the system must extend this class.
  * Extended components are required to set a different componentType for each component type
- * @author Arni Arent
  */
-d8.component = d8.base.extend({
+var component = base.extend({
   create: function () {
     return Object.create(this);
   }
 });
 
-Object.defineProperty(d8.component, "componentType", {
+Object.defineProperty(component, "componentType", {
   value: "component",
   configurable: true,
   enumerable: false,
   writable: false
-});d8.componentManager = (function () {
+});
+
+var componentManager = (function () {
   var componentManagerClosure = function () {
     var componentsByType = bag();
     var deleted = bag();
@@ -858,28 +816,24 @@ Object.defineProperty(d8.component, "componentType", {
     };
   };
 
-  var componentManager = d8.Helper.extendManager(d8.manager, "componentManager", {
+  var componentManager = ExtendHelper.extendManager(manager, "componentManager", {
     create: function () {
       var self = Object.create(this);
       componentManagerClosure.call(self);
       return self;
     }
   });
-  Object.defineProperty(componentManager, "managerType", {
-    value: "componentManager",
-    configurable: true,
-    enumerable: false,
-    writable: false
-  });
   return componentManager;
-})();d8.ComponentMapper = (function () {
+})();
+
+var ComponentMapper = (function () {
   var closure = function (componentType, world) {
-    var type = d8.ComponentType.getTypeFor(componentType);
+    var type = ComponentType.getTypeFor(componentType);
     var components = world.getComponentManager().getComponentsByType(type);
 
     /**
      * Fast but unsafe retrieval of a component for this entity.
-     * No bounding checks, so this could throw an ArrayIndexOutOfBoundsExeption,
+     * No bounding checks, so this could return undefined,
      * however in most scenarios you already know the entity possesses this component.
      *
      * @param e the entity that should possess the component
@@ -927,7 +881,9 @@ Object.defineProperty(d8.component, "componentType", {
       return componentMapper;
     }
   };
-})();d8.ComponentType = (function () {
+})();
+
+var ComponentType = (function () {
   var INDEX = 0;
   var componentTypes = Object.create(null);
 
@@ -955,14 +911,14 @@ Object.defineProperty(d8.component, "componentType", {
     }
   };
 })();
+
+
 /**
  * The entity class. Cannot be instantiated outside the framework, you must
  * create new entities using World.
  *
- * @author Arni Arent
- *
  */
-d8.entity = (function () {
+var entity = (function () {
   var entityClosure = function (world, id) {
     var pUuid;
     var componentBits = bitSet();
@@ -1037,7 +993,7 @@ d8.entity = (function () {
     this.addComponent = function addComponent(component, componentType) {
       var type = componentType;
       if (!type) {
-        type = d8.ComponentType.getTypeFor(component.componentType);
+        type = ComponentType.getTypeFor(component.componentType);
       }
       componentManager.addComponent(this, type, component);
       return this;
@@ -1051,7 +1007,7 @@ d8.entity = (function () {
      * @return this entity for chaining.
      */
     this.removeComponent = function removeComponent(component) {
-      this.removeComponentByType(component.componentType);
+      return this.removeComponentByType(component.componentType);
     };
 
     /**
@@ -1065,7 +1021,7 @@ d8.entity = (function () {
     this.removeComponentByType = function removeComponentByType(componentType) {
       var type = componentType;
       if (typeof type === "string") {
-        type = d8.ComponentType.getTypeFor(type);
+        type = ComponentType.getTypeFor(type);
       }
       componentManager.removeComponent(this, type);
       return this;
@@ -1106,7 +1062,7 @@ d8.entity = (function () {
     this.getComponent = function getComponent(componentType) {
       var type = componentType;
       if (typeof type === "string") {
-        type = d8.ComponentType.getTypeFor(type);
+        type = ComponentType.getTypeFor(type);
       }
       return componentManager.getComponent(this, type);
     };
@@ -1173,7 +1129,9 @@ d8.entity = (function () {
   };
 
   return entity;
-})();d8.entityManager = (function () {
+})();
+
+var entityManager = (function () {
   var identifierPool = function () {
     var ids = bag();
     var nextAvailableId = 0;
@@ -1199,7 +1157,7 @@ d8.entity = (function () {
     var idPool = identifierPool();
 
     this.createEntityInstance = function createEntityInstance() {
-      var e = d8.entity.create(this.getWorld(), idPool.checkOut());
+      var e = entity.create(this.getWorld(), idPool.checkOut());
       created++;
       return e;
     };
@@ -1295,7 +1253,7 @@ d8.entity = (function () {
     };
   };
 
-  var entityManager = d8.Helper.extendManager(d8.manager, "entityManager", {
+  var entityManager = ExtendHelper.extendManager(manager, "entityManager", {
     create: function () {
       var self = Object.create(this);
       entityManagerClosure.call(self);
@@ -1303,7 +1261,9 @@ d8.entity = (function () {
     }
   });
   return entityManager;
-})();d8.entityObserver = d8.base.extend({
+})();
+
+var entityObserver = base.extend({
   added: function (e) {
   },
   changed: function (e) {
@@ -1315,15 +1275,15 @@ d8.entity = (function () {
   disabled: function (e) {
   }
 });
+
+
 /**
  * The most raw entity system. It should not typically be used, but you can create your own
  * entity system handling by extending this. It is recommended that you use the other provided
  * entity system implementations.
  *
- * @author Arni Arent
- *
  */
-d8.entitySystem = (function () {
+var entitySystem = (function () {
   var SystemIndexManager = (function () {
     var INDEX = 0;
     var indices = Object.create(null);
@@ -1449,7 +1409,7 @@ d8.entitySystem = (function () {
     };
   };
 
-  var entitySystem = d8.Helper.extendSystem(d8.base, "entitySystem", d8.entityObserver, {
+  var entitySystem = ExtendHelper.extendSystem(base, "entitySystem", entityObserver, {
     /**
      * Creates an entity system that uses the specified aspect as a matcher against entities.
      * @param aspect to match against entities
@@ -1505,7 +1465,9 @@ d8.entitySystem = (function () {
   });
 
   return entitySystem;
-})();var Helper = (function () {
+})();
+
+var ExtendHelper = (function () {
   function extend(base, typeInfo) {
     var extensions = Array.prototype.slice.call(arguments, 2);
     var extended = base.extend.apply(base, extensions);
@@ -1571,13 +1533,15 @@ d8.entitySystem = (function () {
       return extend.apply(null, args);
     }
   };
-})();/**
+})();
+
+/**
  * Manager.
  *
  * @author Arni Arent
  *
  */
-d8.manager = d8.base.extend(d8.entityObserver, {
+var manager = base.extend(entityObserver, {
   initialize: function initialize() {
   },
   setWorld: function setWorld(world) {
@@ -1590,12 +1554,14 @@ d8.manager = d8.base.extend(d8.entityObserver, {
 
 // add identifier for manager - use for identifying managers
 // overwrite when extend
-Object.defineProperty(d8.manager, "managerType", {
+Object.defineProperty(manager, "managerType", {
   value: "manager",
   configurable: true,
   enumerable: false,
   writable: false
-});/**
+});
+
+/**
  * The primary instance for the framework. It contains all the managers.
  *
  * You must use this to create, delete and retrieve entities.
@@ -1605,10 +1571,10 @@ Object.defineProperty(d8.manager, "managerType", {
  * @author Arni Arent
  *
  */
-d8.world = (function () {
+var world = (function () {
   var worldClosure = function () {
-    var entityManager = d8.entityManager.create();
-    var componentManager = d8.componentManager.create();
+    var entityManager = entityManager.create();
+    var componentManager = componentManager.create();
 
     var delta = 0;
     var added = bag();
@@ -1853,7 +1819,7 @@ d8.world = (function () {
      * @return mapper for specified component type.
      */
     this.getMapper = function getMapper(componentType) {
-      return d8.ComponentMapper.getFor(componentType, this);
+      return ComponentMapper.getFor(componentType, this);
     };
 
     function notify(bag, entity, action) {
@@ -1908,7 +1874,7 @@ d8.world = (function () {
     this.setManager(componentManager);
   };
 
-  var world = d8.base.extend({
+  var world = base.extend({
     create: function () {
       var self = Object.create(this);
       worldClosure.call(self);
@@ -1917,7 +1883,9 @@ d8.world = (function () {
   });
 
   return world;
-})();/**
+})();
+
+/**
  * The purpose of this class is to allow systems to execute at varying intervals.
  *
  * An example system would be an ExpirationSystem, that deletes entities after a certain
@@ -1939,10 +1907,8 @@ d8.world = (function () {
  * Also, when processing the entities you must also call offerDelay(float delay)
  * for all valid entities.
  *
- * @author Arni Arent
- *
  */
-d8.delayedEntityProcessingSystem = (function () {
+var delayedEntityProcessingSystem = (function () {
   var delayedEntityProcessingClosure = function () {
     var delay = 0;
     var running = false;
@@ -2059,9 +2025,9 @@ d8.delayedEntityProcessingSystem = (function () {
     };
   };
 
-  var delayedEntityProcessingSystem = d8.Helper.extendSystem(d8.entitySystem, "delayedEntityProcessingSystem", {
+  var delayedEntityProcessingSystem = ExtendHelper.extendSystem(entitySystem, "delayedEntityProcessingSystem", {
     create: function (aspect) {
-      var self = d8.entitySystem.create.call(this, aspect);
+      var self = entitySystem.create.call(this, aspect);
       delayedEntityProcessingClosure.call(self);
       return self;
     },
@@ -2089,16 +2055,16 @@ d8.delayedEntityProcessingSystem = (function () {
     }
   });
   return delayedEntityProcessingSystem;
-})();/**
+})();
+
+/**
  * A typical entity system. Use this when you need to process entities possessing the
  * provided component types.
  *
- * @author Arni Arent
- *
  */
-d8.entityProcessingSystem = d8.Helper.extendSystem(d8.entitySystem, "entityProcessingSystem", {
+var entityProcessingSystem = ExtendHelper.extendSystem(entitySystem, "entityProcessingSystem", {
   create: function (aspect) {
-    var self = d8.entitySystem.create.call(this, aspect);
+    var self = entitySystem.create.call(this, aspect);
     return self;
   },
   /**
@@ -2116,28 +2082,28 @@ d8.entityProcessingSystem = d8.Helper.extendSystem(d8.entitySystem, "entityProce
   checkProcessing: function checkProcessing() {
     return true;
   }
-});/**
+});
+
+/**
  * If you need to process entities at a certain interval then use this.
  * A typical usage would be to regenerate ammo or health at certain intervals, no need
  * to do that every game loop, but perhaps every 100 ms. or every second.
  *
- * @author Arni Arent
- *
  */
-d8.intervalEntityProcessingSystem = d8.Helper.extendSystem(d8.entityProcessingSystem, "intervalEntityProcessingSystem", {
+var intervalEntityProcessingSystem = ExtendHelper.extendSystem(entityProcessingSystem, "intervalEntityProcessingSystem", {
   create: function (aspect, interval) {
-    var self = d8.entityProcessingSystem.create.call(this, aspect);
-    self = d8.intervalEntitySystem.create.call(self, aspect, interval);
+    var self = entityProcessingSystem.create.call(this, aspect);
+    self = intervalEntitySystem.create.call(self, aspect, interval);
     return self;
   }
-});/**
+});
+
+/**
  * A system that processes entities at a interval in milliseconds.
  * A typical usage would be a collision system or physics system.
  *
- * @author Arni Arent
- *
  */
-d8.intervalEntitySystem = (function () {
+var intervalEntitySystem = (function () {
   var intervalEntitySystemClosure = function (interval) {
     var acc = 0;
 
@@ -2151,25 +2117,25 @@ d8.intervalEntitySystem = (function () {
     };
   };
 
-  var intervalEntitySystem = d8.Helper.extendSystem(d8.entitySystem, "intervalEntitySystem", {
+  var intervalEntitySystem = ExtendHelper.extendSystem(entitySystem, "intervalEntitySystem", {
     create: function (aspect, interval) {
-      var self = d8.entitySystem.create.call(this, aspect);
+      var self = entitySystem.create.call(this, aspect);
       intervalEntitySystemClosure.call(self, interval);
       return self;
     }
   });
   return intervalEntitySystem;
-})();/**
+})();
+
+/**
  * This system has an empty aspect so it processes no entities, but it still gets invoked.
  * You can use this system if you need to execute some game logic and not have to concern
  * yourself about aspects or entities.
  *
- * @author Arni Arent
- *
  */
-d8.voidEntitySystem = d8.Helper.extendSystem(d8.entitySystem, "voidEntitySystem", {
+var voidEntitySystem = ExtendHelper.extendSystem(entitySystem, "voidEntitySystem", {
   create: function () {
-    var self = d8.entitySystem.create.call(this, d8.Aspect.getEmpty());
+    var self = entitySystem.create.call(this, Aspect.getEmpty());
     return self;
   },
   processSystem: function processSystem() {
@@ -2183,3 +2149,311 @@ d8.voidEntitySystem = d8.Helper.extendSystem(d8.entitySystem, "voidEntitySystem"
     return true;
   }
 });
+
+/**
+ * If you need to group your entities together, e.g. tanks going into "units" group or explosions into "effects",
+ * then use this manager. You must retrieve it using world instance.
+ *
+ * A entity can be assigned to more than one group.
+ *
+ */
+var groupManager = (function () {
+  var groupManagerClosure = function () {
+    var entitiesByGroup = Object.create(null);
+    var groupsByEntity = Object.create(null);
+
+    /**
+     * Set the group of the entity.
+     *
+     * @param entity to add into the group.
+     * @param group group to add the entity into.
+     */
+    this.add = function add(entity, group) {
+      var entities = entitiesByGroup[group];
+      if (!entities) {
+        entities = bag();
+        entitiesByGroup[group] = entities;
+      }
+      entities.add(entity);
+
+      var groups = groupsByEntity[entity.getUuid()];
+      if (!groups) {
+        groups = bag();
+        groupsByEntity[entity.getUuid()] = groups;
+      }
+      groups.add(group);
+    };
+
+    /**
+     * Remove the entity from the specified group.
+     * @param entity
+     * @param group
+     */
+    this.remove = function remove(entity, group) {
+      var entities = entitiesByGroup[group];
+      if (entities) {
+        entities.removeElement(entity);
+      }
+      var groups = groupsByEntity[entity.getUuid()];
+      if (groups) {
+        groups.removeElement(group);
+      }
+    };
+
+    function removeFromAllGroups(entity) {
+      var groups = groupsByEntity[entity.getUuid()];
+      if (groups) {
+        var entities;
+        for (var i = 0; i < groups.size(); i++) {
+          entities = entitiesByGroup[groups.get(i)];
+          if (entities) {
+            entities.removeElement(entity);
+          }
+        }
+        groups.clear();
+      }
+    }
+
+    this.removeFromAllGroups = removeFromAllGroups;
+
+    /**
+     * Get all entities that belong to the provided group.
+     * @param group name of the group.
+     * @return read-only bag of entities belonging to the group.
+     */
+    this.getEntities = function getEntities(group) {
+      var entities = entitiesByGroup[group];
+      if (!entities) {
+        entities = bag();
+        entitiesByGroup[group] = entities;
+      }
+      return entities;
+    };
+
+    /**
+     * @param entity
+     * @return the groups the entity belongs to, null if none.
+     */
+    this.getGroups = function getGroups(entity) {
+      if (isInAnyGroup(entity)) {
+        return groupsByEntity[entity.getUuid()];
+      }
+      return null;
+    };
+
+    /**
+     * Checks if the entity belongs to any group.
+     * @param entity to check.
+     * @return true if it is in any group, false if none.
+     */
+    function isInAnyGroup(entity) {
+      var groups = groupsByEntity[entity.getUuid()];
+      return groups && !groups.isEmpty();
+    }
+
+    this.isInAnyGroup = isInAnyGroup;
+
+    /**
+     * Check if the entity is in the supplied group.
+     * @param entity to check for.
+     * @param group the group to check in.
+     * @return true if the entity is in the supplied group, false if not.
+     */
+    this.isInGroup = function isInGroup(entity, group) {
+      var groups = groupsByEntity[entity.getUuid()];
+      return groups && groups.contains(group);
+    };
+
+    this.deleted = function deleted(entity) {
+      removeFromAllGroups(entity);
+    };
+  };
+
+  var groupManager = ExtendHelper.extendManager(manager, "groupManager", {
+    create: function () {
+      var self = Object.create(this);
+      groupManagerClosure.call(self);
+      return self;
+    }
+  });
+  return groupManager;
+})();
+
+/**
+ * You may sometimes want to specify to which player an entity belongs to.
+ *
+ * An entity can only belong to a single player at a time.
+ *
+ */
+var playerManager = (function () {
+  var playerManagerClosure = function () {
+    var playerByEntity = Object.create(null);
+    var entitiesByPlayer = Object.create(null);
+
+    this.setPlayer = function setPlayer(entity, player) {
+      playerByEntity[entity.getUuid()] = player;
+      var entities = entitiesByPlayer[player];
+      if (!entities) {
+        entities = bag();
+        entitiesByPlayer[player] = entities;
+      }
+      entities.add(entity);
+    };
+
+    this.getEntitiesOfPlayer = function getEntitiesOfPlayer(player) {
+      var entities = entitiesByPlayer[player];
+      if (!entities) {
+        entities = bag();
+        entitiesByPlayer[player] = entities;
+      }
+      return entities;
+    };
+
+    function removeFromPlayer(entity) {
+      var player = playerByEntity[entity.getUuid()];
+      if (player) {
+        var entities = entitiesByPlayer[player];
+        if (entities) {
+          entities.removeElement(entity);
+        }
+      }
+    }
+
+    this.removeFromPlayer = removeFromPlayer;
+
+    this.getPlayer = function getPlayer(entity) {
+      return playerByEntity[entity.getUuid()];
+    };
+
+    this.deleted = function deleted(entity) {
+      removeFromPlayer(entity);
+    };
+  };
+
+  var playerManager = ExtendHelper.extendManager(manager, "playerManager", {
+    create: function () {
+      var self = Object.create(this);
+      playerManagerClosure.call(self);
+      return self;
+    }
+  });
+  return playerManager;
+})();
+
+
+/**
+ * If you need to tag any entity, use this. A typical usage would be to tag
+ * entities such as "PLAYER", "BOSS" or something that is very unique.
+ *
+ */
+var tagManager = (function () {
+  var tagManagerClosure = function () {
+    var entitiesByTag = Object.create(Object.prototype);
+    var tagsByEntity = Object.create(null);
+
+    this.register = function register(tag, entity) {
+      entitiesByTag[tag] = entity;
+      tagsByEntity[entity.getUuid()] = tag;
+    };
+
+    this.unregister = function unregister(tag) {
+      var entity = entitiesByTag[tag];
+      delete entitiesByTag[tag];
+      delete tagsByEntity[entity.getUuid()];
+    };
+
+    this.isRegistered = function isRegistered(tag) {
+      return entitiesByTag[tag] ? true : false;
+    };
+
+    this.getEntity = function getEntity(tag) {
+      return entitiesByTag[tag];
+    };
+
+    this.getRegisteredTags = function getRegisteredTags() {
+      var tags = [];
+      for (var key in entitiesByTag) {
+        if (entitiesByTag.hasOwnProperty(key)) {
+          tags.push(key);
+        }
+      }
+      return tags;
+    };
+
+    this.deleted = function deleted(entity) {
+      var removedTag = tagsByEntity[entity.getUuid()];
+      delete tagsByEntity[entity.getUuid()];
+      if (removedTag !== null) {
+        delete entitiesByTag[removedTag];
+      }
+    };
+  };
+
+  var tagManager = ExtendHelper.extendManager(manager, "tagManager", {
+    create: function () {
+      var self = Object.create(this);
+      tagManagerClosure.call(self);
+      return self;
+    }
+  });
+  return tagManager;
+})();
+
+/**
+ * Use this class together with PlayerManager.
+ *
+ * You may sometimes want to create teams in your game, so that
+ * some players are team mates.
+ *
+ * A player can only belong to a single team.
+ *
+ */
+var teamManager = (function () {
+  var teamManagerClosure = function () {
+    var playersByTeam = Object.create(null);
+    var teamByPlayer = Object.create(null);
+
+    this.getTeam = function getTeam(player) {
+      return teamByPlayer[player];
+    };
+
+    this.setTeam = function setTeam(player, team) {
+      removeFromTeam(player);
+
+      teamByPlayer[player] = team;
+
+      var players = playersByTeam[team];
+      if (!players) {
+        players = bag();
+        playersByTeam[team] = players;
+      }
+      players.add(player);
+    };
+
+    this.getPlayers = function getPlayers(team) {
+      return playersByTeam[team];
+    };
+
+    function removeFromTeam(player) {
+      var team = teamByPlayer[player];
+      delete teamByPlayer[player];
+      if (!team) {
+        var players = playersByTeam[team];
+        if (!players) {
+          players.removeElement(player);
+        }
+      }
+    }
+
+    this.removeFromTeam = removeFromTeam;
+  };
+
+  var teamManager = ExtendHelper.extendManager(manager, "managerType", {
+    create: function () {
+      var self = Object.create(this);
+      teamManagerClosure.call(self);
+      return self;
+    }
+  });
+  return teamManager;
+})();

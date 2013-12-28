@@ -1,19 +1,20 @@
 module.exports = function (grunt) {
+  var files = ['lib/utils/*.js', 'lib/*.js', 'lib/systems/*.js', 'lib/managers/*.js'];
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
       options: {
-        separator: '',
+        separator: '\n\n',
         banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
           '<%= grunt.template.today("yyyy-mm-dd") %> */'
       },
       dist: {
-        src: ['lib/utils/*.js', 'lib/*.js', 'lib/systems/*.js', 'lib/manager/*.js'],
+        src: files,
         dest: '<%= pkg.name %>.js'
       }
     },
     jshint: {
-      beforeconcat: ['lib/utils/*.js', 'lib/*.js', 'lib/systems/*.js', 'lib/manager/*.js'],
+      beforeconcat: files,
       afterconcat: ['<%= pkg.name %>.js']
     },
     uglify: {
