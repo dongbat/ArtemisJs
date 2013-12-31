@@ -1,12 +1,23 @@
 module.exports = function (grunt) {
-  var files = ['lib/utils/*.js', 'lib/*.js', 'lib/systems/*.js', 'lib/managers/*.js'];
+  var files = ['lib/**/!(artemis).js', 'lib/artemis.js'];
+  var webGlobalVar = 'artemis';
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
       options: {
         separator: '\n\n',
         banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - ' +
-          '<%= grunt.template.today("yyyy-mm-dd") %> */'
+          '<%= grunt.template.today("yyyy-mm-dd") %> */\n\n' +
+          '(function (root, factory) {\n' +
+          '  if (typeof define === \'function\' && define.amd) {\n' +
+          '    define(factory);\n' +
+          '  } else if (typeof exports === \'object\') {\n' +
+          '    module.exports = factory();\n' +
+          '  } else {\n' +
+          '    root.' + webGlobalVar + ' = factory();\n' +
+          '  }\n' +
+          '}(this, function () {\n',
+        footer: '\n\n  return artemis;\n}));'
       },
       dist: {
         src: files,

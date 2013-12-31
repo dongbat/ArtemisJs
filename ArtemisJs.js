@@ -1,566 +1,14 @@
-/*! ArtemisJs - v0.0.1 - 2013-12-28 *//**
- * Collection type a bit like ArrayList but does not preserve the order of its
- * entities, speedwise it is very good, especially suited for games.
- */
-var bag = function (capacity) {
-  var data = [];
-  var pSize = 0;
-  if (capacity) {
-    data.length = capacity;
+/*! ArtemisJs - v0.0.1 - 2013-12-31 */
+
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define(factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
   } else {
-    data.length = 64;
+    root.artemis = factory();
   }
-
-  /**
-   * Removes the element at the specified position in this Bag. does this by
-   * overwriting it was last element then removing last element
-   *
-   * @param index
-   *            the index of element to be removed
-   * @return element that was removed from the Bag; undefined if index is equal or greater than the bag's size
-   */
-  var removeByIndex = function (index) {
-    if (index >= pSize) {
-      return undefined;
-    }
-    var tmp = data[index];
-    data[index] = data[--pSize];
-    data[pSize] = null;
-    return tmp;
-  };
-
-  /**
-   * Remove and return the last object in the bag.
-   *
-   * @return the last object in the bag, null if empty.
-   */
-  var removeLast = function () {
-    if (pSize > 0) {
-      var tmp = data[--pSize];
-      data[pSize] = null;
-      return tmp;
-    }
-    return null;
-  };
-
-  /**
-   * Removes the first occurrence of the specified element from this Bag, if
-   * it is present. If the Bag does not contain the element, it is unchanged.
-   * does this by overwriting it was last element then removing last element
-   *
-   * @param e
-   *            element to be removed from this list, if present
-   * @return <tt>true</tt> if this list contained the specified element
-   */
-  var removeElement = function (e) {
-    var tmp;
-    for (var i = 0; i < pSize; i++) {
-      tmp = data[i];
-      if (e == tmp) {
-        data[i] = data[--pSize];
-        data[pSize] = null;
-        return true;
-      }
-    }
-    return false;
-  };
-
-  /**
-   * Check if bag contains this element.
-   *
-   * @param e
-   * @return
-   */
-  var contains = function (e) {
-    for (var i = 0; i < pSize; i++) {
-      if (e == data[i]) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  /**
-   * Removes from this Bag all of its elements that are contained in the
-   * specified Bag.
-   *
-   * @param removeBag
-   *            Bag containing elements to be removed from this Bag
-   * @return {@code true} if this Bag changed as a result of the call
-   */
-  var removeAll = function (removeBag) {
-    var modified = false;
-    var tmp;
-    for (var i = 0; i < removeBag.size(); i++) {
-      tmp = removeBag.get(i);
-      for (var j = 0; j < pSize; j++) {
-        if (tmp == data[j]) {
-          removeByIndex(j);
-          j--;
-          modified = true;
-          break;
-        }
-      }
-    }
-
-    return modified;
-  };
-
-  /**
-   * Returns the element at the specified position in Bag.
-   *
-   * @param index
-   *            index of the element to return
-   * @return the element at the specified position in bag
-   */
-  var get = function (index) {
-    return data[index];
-  };
-
-  /**
-   * Returns the number of elements in this bag.
-   *
-   * @return the number of elements in this bag
-   */
-  var size = function () {
-    return pSize;
-  };
-
-  /**
-   * Returns the number of elements the bag can hold without growing.
-   *
-   * @return the number of elements the bag can hold without growing.
-   */
-  var getCapacity = function () {
-    return data.length;
-  };
-
-  /**
-   * Checks if the internal storage supports this index.
-   *
-   * @param index
-   * @return
-   */
-  var isIndexWithinBounds = function (index) {
-    return index < getCapacity();
-  };
-
-  /**
-   * Returns true if this list contains no elements.
-   *
-   * @return true if this list contains no elements
-   */
-  var isEmpty = function () {
-    return pSize === 0;
-  };
-
-  /**
-   * Adds the specified element to the end of this bag. if needed also
-   * increases the capacity of the bag.
-   *
-   * @param e
-   *            element to be added to this list
-   */
-  var add = function (e) {
-    if (pSize === data.length) {
-      grow();
-    }
-    data[pSize++] = e;
-  };
-
-  /**
-   * Set element at specified index in the bag.
-   *
-   * @param index position of element
-   * @param e the element
-   */
-  var set = function (index, e) {
-    if (index >= data.length) {
-      grow(index * 2);
-    }
-    if (index > pSize) {
-      pSize = index + 1;
-    }
-    data[index] = e;
-  };
-
-  function grow(newCapacity) {
-    if (!newCapacity) {
-      newCapacity = Math.ceil((data.length * 3) / 2 + 1);
-    }
-    data.length = newCapacity;
-  }
-
-  /**
-   * Removes all of the elements from this bag. The bag will be empty after
-   * this call returns.
-   */
-  var clear = function () {
-    for (var i = 0; i < data.length; i++) {
-      data[i] = null;
-    }
-    pSize = 0;
-  };
-
-  /**
-   * Add all items into this bag.
-   * @param items a bag of items to add
-   */
-  var addAll = function (items) {
-    for (var i = 0; i < items.size(); i++) {
-      add(items.get(i));
-    }
-  };
-
-  return {
-    add: add,
-    addAll: addAll,
-    removeByIndex: removeByIndex,
-    removeLast: removeLast,
-    removeElement: removeElement,
-    removeAll: removeAll,
-    clear: clear,
-    get: get,
-    set: set,
-    getCapacity: getCapacity,
-    size: size,
-    contains: contains,
-    isIndexWithinBounds: isIndexWithinBounds,
-    isEmpty: isEmpty
-  };
-};
-
-/**
- * Bitset implementation based on https://github.com/inexplicable/bitset
- */
-function bitSet() {
-  var BITS_OF_A_WORD = 32,
-    SHIFTS_OF_A_WORD = 5;
-
-  var _words = [];
-
-  var whichWord = function (pos) {
-    return pos >> SHIFTS_OF_A_WORD;
-  };
-  var mask = function (pos) {
-    return 1 << (pos & 31);
-  };
-
-  var getWords = function () {
-    return _words;
-  };
-  var set = function (pos) {
-    if (pos < 0) {
-      return;
-    }
-    var which = whichWord(pos);
-    _words[which] = _words[which] | mask(pos);
-    return _words[which];
-  };
-  var clear = function (pos) {
-    if (pos < 0) {
-      return;
-    }
-    var which = whichWord(pos);
-    _words[which] = _words[which] & ~mask(pos);
-    return _words[which];
-  };
-  var get = function (pos) {
-    if (pos < 0) {
-      return undefined;
-    }
-    var which = whichWord(pos);
-    return _words[which] & mask(pos);
-  };
-  var maxWords = function () {
-    return _words.length;
-  };
-  var cardinality = function () {
-    var next, sum = 0;
-    for (next = 0; next < _words.length; next += 1) {
-      var nextWord = _words[next] || 0;
-      //this loops only the number of set bits, not 32 constant all the time!
-      for (var bits = nextWord; bits !== 0; bits &= (bits - 1)) {
-        sum += 1;
-      }
-    }
-    return sum;
-  };
-  var or = function (set) {
-    if (this === set) {
-      return this;
-    }
-
-    var next, commons = Math.min(maxWords(), set.maxWords());
-    var setWords = set.getWords();
-    for (next = 0; next < commons; next += 1) {
-      _words[next] = (_words[next] || 0) | (setWords[next] || 0);
-    }
-    if (commons < set.maxWords()) {
-      _words = _words.concat(setWords.slice(commons, set.maxWords()));
-    }
-    return this;
-  };
-  var and = function (set) {
-    if (this === set) {
-      return this;
-    }
-
-    var next,
-      commons = Math.min(maxWords(), set.maxWords());
-    var setWords = set.getWords();
-    for (next = 0; next < commons; next += 1) {
-      _words[next] = (_words[next] || 0) & (setWords[next] || 0);
-    }
-    if (commons > set.maxWords()) {
-      var length = Math.max(Math.ceil((set.maxWords() - commons)), 0);
-      var idx = 0;
-      var range = new Array(length);
-      while (idx < length) {
-        range[idx++] = commons;
-        commons += 1;
-      }
-      for (var i = 0; i < range.length; i++) {
-        _words.pop();
-      }
-    }
-    return this;
-  };
-  var xor = function (set) {
-    var next, commons = Math.min(maxWords(), set.maxWords());
-    var setWords = set.getWords();
-    for (next = 0; next < commons; next += 1) {
-      _words[next] = (_words[next] || 0) ^ (setWords[next] || 0);
-    }
-
-    var mw;
-    if (commons < set.maxWords()) {
-      mw = set.maxWords();
-      for (next = commons; next < mw; next += 1) {
-        _words[next] = (setWords[next] || 0) ^ 0;
-      }
-    } else {
-      mw = maxWords();
-      for (next = commons; next < mw; next += 1) {
-        _words[next] = (_words[next] || 0) ^ 0;
-      }
-    }
-    return this;
-  };
-  var nextSetBit = function (pos) {
-    var next = whichWord(pos);
-    //beyond max words
-    if (next >= _words.length) {
-      return -1;
-    }
-    //the very first word
-    var firstWord = _words[next],
-      mw = maxWords(),
-      bit;
-    if (firstWord) {
-      for (bit = pos & 31; bit < BITS_OF_A_WORD; bit += 1) {
-        if ((firstWord & mask(bit))) {
-          return (next << SHIFTS_OF_A_WORD) + bit;
-        }
-      }
-    }
-    for (next = next + 1; next < mw; next += 1) {
-      var nextWord = _words[next];
-      if (nextWord) {
-        for (bit = 0; bit < BITS_OF_A_WORD; bit += 1) {
-          if ((nextWord & mask(bit)) !== 0) {
-            return (next << SHIFTS_OF_A_WORD) + bit;
-          }
-        }
-      }
-    }
-    return -1;
-  };
-  var prevSetBit = function (pos) {
-    var prev = whichWord(pos);
-    //beyond max words
-    if (prev >= _words.length) {
-      return -1;
-    }
-    //the very last word
-    var lastWord = _words[prev],
-      bit;
-    if (lastWord) {
-      for (bit = pos & 31; bit >= 0; bit -= 1) {
-        if ((lastWord & mask(bit))) {
-          return (prev << SHIFTS_OF_A_WORD) + bit;
-        }
-      }
-    }
-    for (prev = prev - 1; prev >= 0; prev -= 1) {
-      var prevWord = _words[prev];
-      if (prevWord) {
-        for (bit = BITS_OF_A_WORD - 1; bit >= 0; bit -= 1) {
-          if ((prevWord & mask(bit)) !== 0) {
-            return (prev << SHIFTS_OF_A_WORD) + bit;
-          }
-        }
-      }
-    }
-    return -1;
-  };
-  var toString = function (radix) {
-    radix = radix || 10;
-    var tmp = [];
-    for (var i = 0; i < _words.length; i++) {
-      tmp.push((_words[i] || 0).toString(radix));
-    }
-    return '[' + tmp.join(', ') + ']';
-  };
-  var intersects = function (set) {
-    for (var i = Math.min(maxWords(), set.maxWords()) - 1; i >= 0; i--) {
-      if (_words[i] & set.getWords()[i]) {
-        return true;
-      }
-    }
-    return false;
-  };
-  var isEmpty = function () {
-    return _words.length === 0;
-  };
-
-  return {
-    getWords: getWords,
-    set: set,
-    get: get,
-    clear: clear,
-    maxWords: maxWords,
-    cardinality: cardinality,
-    or: or,
-    and: and,
-    xor: xor,
-    nextSetBit: nextSetBit,
-    prevSetBit: prevSetBit,
-    intersects: intersects,
-    isEmpty: isEmpty,
-    toString: toString
-  };
-}
-
-if (!Math.signum) {
-	Math.signum = function (x) {
-		return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
-	};
-}
-
-var FastMath = {
-	_sin_a: -4 / this.SQUARED_PI,
-	_sin_b: 4 / Math.PI,
-	_sin_p: 9 / 40,
-	_asin_a: -0.0481295276831013447,
-	_asin_b: -0.343835993947915197,
-	_asin_c: 0.962761848425913169,
-	_asin_d: 1.00138940860107040,
-
-	SQUARED_PI: Math.PI * Math.PI,
-	HALF_PI: Math.PI * 0.5,
-	TWO_PI: Math.PI * 2,
-	THREE_PI_HALVES: this.TWO_PI - this.HALF_PI,
-	cos: function (x) {
-		return this.sin(x + ((x > this.HALF_PI) ? -this.THREE_PI_HALVES : this.HALF_PI));
-	},
-	sin: function (x) {
-		x = this._sin_a * x * Math.abs(x) + this._sin_b * x;
-		return this._sin_p * (x * Math.abs(x) - x) + x;
-	},
-	tan: function (x) {
-		return sin(x) / cos(x);
-	},
-	asin: function (x) {
-		return x * (Math.abs(x) * (Math.abs(x) * this._asin_a + this._asin_b) + this._asin_c) + 
-			Math.signum(x) * (this._asin_d - Math.sqrt(1 - x * x));
-	},
-	acos: function (x) {
-		return this.HALF_PI - this.asin(x);
-	},
-	atan: function (x) {
-		return (Math.abs(x) < 1) ? x / (1 + this._atan_a * x * x) : Math.signum(x) * this.HALF_PI - x / (x * x + this._atan_a);
-	}
-};
-
-var timer = {
-  _delay: 0,
-  _repeat: false,
-  _acc: 0,
-  _done: false,
-  _stopped: false,
-  execute: null,
-  create: function (delay, repeat, executeFunction) {
-    var self = Object.create(this);
-    self._delay = delay;
-    if (typeof repeat === "boolean") {
-      self._repeat = repeat;
-    }
-    self.execute = executeFunction;
-    return self;
-  },
-  update: function update(delta) {
-    if (!this._done && !this._stopped) {
-      this._acc += delta;
-
-      if (this._acc >= this._delay) {
-        this._acc -= this._delay;
-
-        if (this._repeat) {
-          this.reset();
-        } else {
-          this._done = true;
-        }
-
-        if (typeof this.execute === "function") {
-          this.execute();
-        }
-      }
-    }
-  },
-  reset: function reset() {
-    this._stopped = false;
-    this._done = false;
-    this._acc = 0;
-  },
-  isDone: function isDone() {
-    return this._done;
-  },
-  isRunning: function isRunning() {
-    return !this._done && this._acc < this._delay && !this._stopped;
-  },
-  stop: function stop() {
-    this._stopped = true;
-  },
-  setDelay: function setDelay(delay) {
-    this._delay = delay;
-  },
-  getPercentageRemaining: function getPercentageRemaining() {
-    if (this._done)
-      return 100;
-    else if (this._stopped)
-      return 0;
-    else
-      return 1 - (this._delay - this._acc) / this._delay;
-  },
-  getDelay: function getDelay() {
-    return this._delay;
-  }
-};
-
-function uuid() {
-  var uuid4 = "", i, random;
-  for (i = 0; i < 32; i++) {
-    random = Math.random() * 16 | 0;
-
-    if (i == 8 || i == 12 || i == 16 || i == 20) {
-      uuid4 += "-";
-    }
-    uuid4 += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
-  }
-  return uuid4;
-}
-
+}(this, function () {
 /**
  * An Aspects is used by systems as a matcher against entities, to check if a system is
  * interested in an entity. Aspects define what sort of component types an entity must
@@ -1562,6 +1010,1142 @@ Object.defineProperty(manager, "managerType", {
 });
 
 /**
+ * If you need to group your entities together, e.g. tanks going into "units" group or explosions into "effects",
+ * then use this manager. You must retrieve it using world instance.
+ *
+ * A entity can be assigned to more than one group.
+ *
+ */
+var groupManager = (function () {
+  var groupManagerClosure = function () {
+    var entitiesByGroup = Object.create(null);
+    var groupsByEntity = Object.create(null);
+
+    /**
+     * Set the group of the entity.
+     *
+     * @param entity to add into the group.
+     * @param group group to add the entity into.
+     */
+    this.add = function add(entity, group) {
+      var entities = entitiesByGroup[group];
+      if (!entities) {
+        entities = bag();
+        entitiesByGroup[group] = entities;
+      }
+      entities.add(entity);
+
+      var groups = groupsByEntity[entity.getUuid()];
+      if (!groups) {
+        groups = bag();
+        groupsByEntity[entity.getUuid()] = groups;
+      }
+      groups.add(group);
+    };
+
+    /**
+     * Remove the entity from the specified group.
+     * @param entity
+     * @param group
+     */
+    this.remove = function remove(entity, group) {
+      var entities = entitiesByGroup[group];
+      if (entities) {
+        entities.removeElement(entity);
+      }
+      var groups = groupsByEntity[entity.getUuid()];
+      if (groups) {
+        groups.removeElement(group);
+      }
+    };
+
+    function removeFromAllGroups(entity) {
+      var groups = groupsByEntity[entity.getUuid()];
+      if (groups) {
+        var entities;
+        for (var i = 0; i < groups.size(); i++) {
+          entities = entitiesByGroup[groups.get(i)];
+          if (entities) {
+            entities.removeElement(entity);
+          }
+        }
+        groups.clear();
+      }
+    }
+
+    this.removeFromAllGroups = removeFromAllGroups;
+
+    /**
+     * Get all entities that belong to the provided group.
+     * @param group name of the group.
+     * @return read-only bag of entities belonging to the group.
+     */
+    this.getEntities = function getEntities(group) {
+      var entities = entitiesByGroup[group];
+      if (!entities) {
+        entities = bag();
+        entitiesByGroup[group] = entities;
+      }
+      return entities;
+    };
+
+    /**
+     * @param entity
+     * @return the groups the entity belongs to, null if none.
+     */
+    this.getGroups = function getGroups(entity) {
+      if (isInAnyGroup(entity)) {
+        return groupsByEntity[entity.getUuid()];
+      }
+      return null;
+    };
+
+    /**
+     * Checks if the entity belongs to any group.
+     * @param entity to check.
+     * @return true if it is in any group, false if none.
+     */
+    function isInAnyGroup(entity) {
+      var groups = groupsByEntity[entity.getUuid()];
+      return groups && !groups.isEmpty();
+    }
+
+    this.isInAnyGroup = isInAnyGroup;
+
+    /**
+     * Check if the entity is in the supplied group.
+     * @param entity to check for.
+     * @param group the group to check in.
+     * @return true if the entity is in the supplied group, false if not.
+     */
+    this.isInGroup = function isInGroup(entity, group) {
+      var groups = groupsByEntity[entity.getUuid()];
+      return groups && groups.contains(group);
+    };
+
+    this.deleted = function deleted(entity) {
+      removeFromAllGroups(entity);
+    };
+  };
+
+  var groupManager = ExtendHelper.extendManager(manager, "groupManager", {
+    create: function () {
+      var self = Object.create(this);
+      groupManagerClosure.call(self);
+      return self;
+    }
+  });
+  return groupManager;
+})();
+
+/**
+ * You may sometimes want to specify to which player an entity belongs to.
+ *
+ * An entity can only belong to a single player at a time.
+ *
+ */
+var playerManager = (function () {
+  var playerManagerClosure = function () {
+    var playerByEntity = Object.create(null);
+    var entitiesByPlayer = Object.create(null);
+
+    this.setPlayer = function setPlayer(entity, player) {
+      playerByEntity[entity.getUuid()] = player;
+      var entities = entitiesByPlayer[player];
+      if (!entities) {
+        entities = bag();
+        entitiesByPlayer[player] = entities;
+      }
+      entities.add(entity);
+    };
+
+    this.getEntitiesOfPlayer = function getEntitiesOfPlayer(player) {
+      var entities = entitiesByPlayer[player];
+      if (!entities) {
+        entities = bag();
+        entitiesByPlayer[player] = entities;
+      }
+      return entities;
+    };
+
+    function removeFromPlayer(entity) {
+      var player = playerByEntity[entity.getUuid()];
+      if (player) {
+        var entities = entitiesByPlayer[player];
+        if (entities) {
+          entities.removeElement(entity);
+        }
+      }
+    }
+
+    this.removeFromPlayer = removeFromPlayer;
+
+    this.getPlayer = function getPlayer(entity) {
+      return playerByEntity[entity.getUuid()];
+    };
+
+    this.deleted = function deleted(entity) {
+      removeFromPlayer(entity);
+    };
+  };
+
+  var playerManager = ExtendHelper.extendManager(manager, "playerManager", {
+    create: function () {
+      var self = Object.create(this);
+      playerManagerClosure.call(self);
+      return self;
+    }
+  });
+  return playerManager;
+})();
+
+
+/**
+ * If you need to tag any entity, use this. A typical usage would be to tag
+ * entities such as "PLAYER", "BOSS" or something that is very unique.
+ *
+ */
+var tagManager = (function () {
+  var tagManagerClosure = function () {
+    var entitiesByTag = Object.create(Object.prototype);
+    var tagsByEntity = Object.create(null);
+
+    this.register = function register(tag, entity) {
+      entitiesByTag[tag] = entity;
+      tagsByEntity[entity.getUuid()] = tag;
+    };
+
+    this.unregister = function unregister(tag) {
+      var entity = entitiesByTag[tag];
+      delete entitiesByTag[tag];
+      delete tagsByEntity[entity.getUuid()];
+    };
+
+    this.isRegistered = function isRegistered(tag) {
+      return entitiesByTag[tag] ? true : false;
+    };
+
+    this.getEntity = function getEntity(tag) {
+      return entitiesByTag[tag];
+    };
+
+    this.getRegisteredTags = function getRegisteredTags() {
+      var tags = [];
+      for (var key in entitiesByTag) {
+        if (entitiesByTag.hasOwnProperty(key)) {
+          tags.push(key);
+        }
+      }
+      return tags;
+    };
+
+    this.deleted = function deleted(entity) {
+      var removedTag = tagsByEntity[entity.getUuid()];
+      delete tagsByEntity[entity.getUuid()];
+      if (removedTag !== null) {
+        delete entitiesByTag[removedTag];
+      }
+    };
+  };
+
+  var tagManager = ExtendHelper.extendManager(manager, "tagManager", {
+    create: function () {
+      var self = Object.create(this);
+      tagManagerClosure.call(self);
+      return self;
+    }
+  });
+  return tagManager;
+})();
+
+/**
+ * Use this class together with PlayerManager.
+ *
+ * You may sometimes want to create teams in your game, so that
+ * some players are team mates.
+ *
+ * A player can only belong to a single team.
+ *
+ */
+var teamManager = (function () {
+  var teamManagerClosure = function () {
+    var playersByTeam = Object.create(null);
+    var teamByPlayer = Object.create(null);
+
+    this.getTeam = function getTeam(player) {
+      return teamByPlayer[player];
+    };
+
+    this.setTeam = function setTeam(player, team) {
+      removeFromTeam(player);
+
+      teamByPlayer[player] = team;
+
+      var players = playersByTeam[team];
+      if (!players) {
+        players = bag();
+        playersByTeam[team] = players;
+      }
+      players.add(player);
+    };
+
+    this.getPlayers = function getPlayers(team) {
+      return playersByTeam[team];
+    };
+
+    function removeFromTeam(player) {
+      var team = teamByPlayer[player];
+      delete teamByPlayer[player];
+      if (!team) {
+        var players = playersByTeam[team];
+        if (!players) {
+          players.removeElement(player);
+        }
+      }
+    }
+
+    this.removeFromTeam = removeFromTeam;
+  };
+
+  var teamManager = ExtendHelper.extendManager(manager, "managerType", {
+    create: function () {
+      var self = Object.create(this);
+      teamManagerClosure.call(self);
+      return self;
+    }
+  });
+  return teamManager;
+})();
+
+/**
+ * The purpose of this class is to allow systems to execute at varying intervals.
+ *
+ * An example system would be an ExpirationSystem, that deletes entities after a certain
+ * lifetime. Instead of running a system that decrements a timeLeft value for each
+ * entity, you can simply use this system to execute in a future at a time of the shortest
+ * lived entity, and then reset the system to run at a time in a future at a time of the
+ * shortest lived entity, etc.
+ *
+ * Another example system would be an AnimationSystem. You know when you have to animate
+ * a certain entity, e.g. in 300 milliseconds. So you can set the system to run in 300 ms.
+ * to perform the animation.
+ *
+ * This will save CPU cycles in some scenarios.
+ *
+ * Implementation notes:
+ * In order to start the system you need to override the inserted(Entity e) method,
+ * look up the delay time from that entity and offer it to the system by using the
+ * offerDelay(float delay) method.
+ * Also, when processing the entities you must also call offerDelay(float delay)
+ * for all valid entities.
+ *
+ */
+var delayedEntityProcessingSystem = (function () {
+  var delayedEntityProcessingClosure = function () {
+    var delay = 0;
+    var running = false;
+    var acc = 0;
+
+    /**
+     * Start processing of entities after a certain amount of delta time.
+     *
+     * Cancels current delayed run and starts a new one.
+     *
+     * @param delta time delay until processing starts.
+     */
+    this.restart = function restart(delta) {
+      delay = delta;
+      acc = 0;
+      running = true;
+    };
+
+    /**
+     * Restarts the system only if the delay offered is shorter than the
+     * time that the system is currently scheduled to execute at.
+     *
+     * If the system is already stopped (not running) then the offered
+     * delay will be used to restart the system with no matter its value.
+     *
+     * If the system is already counting down, and the offered delay is
+     * larger than the time remaining, the system will ignore it. If the
+     * offered delay is shorter than the time remaining, the system will
+     * restart itself to run at the offered delay.
+     *
+     * @param delay
+     */
+    this.offerDelay = function offerDelay(delay) {
+      if (!running || delay < this.getRemainingTimeUntilProcessing()) {
+        this.restart(delay);
+      }
+    };
+
+    /**
+     * Get the time until the system is scheduled to run at.
+     * Returns zero (0) if the system is not running.
+     * Use isRunning() before checking this value.
+     *
+     * @return time when system will run at.
+     */
+    this.getRemainingTimeUntilProcessing = function getRemainingTimeUntilProcessing() {
+      if (running) {
+        return delay - acc;
+      }
+      return 0;
+    };
+
+    /**
+     * Stops the system from running, aborts current countdown.
+     * Call offerDelay or restart to run it again.
+     */
+    this.stop = function stop() {
+      running = false;
+      acc = 0;
+    };
+
+    this.inserted = function inserted(entity) {
+      var delay = this.getRemainingDelay(entity);
+      if (delay > 0) {
+        this.offerDelay(delay);
+      }
+    };
+
+    /**
+     * Get the initial delay that the system was ordered to process entities after.
+     *
+     * @return the originally set delay.
+     */
+    this.getInitialTimeDelay = function getInitialTimeDelay() {
+      return delay;
+    };
+
+    /**
+     * Check if the system is counting down towards processing.
+     *
+     * @return true if it's counting down, false if it's not running.
+     */
+    this.isRunning = function isRunning() {
+      return running;
+    };
+
+    this.processEntities = function processEntities(entities) {
+      var entity, remaining;
+      for (var i = 0; i < entities.size(); i++) {
+        entity = entities.get(i);
+        this.processDelta(entity, acc);
+        remaining = this.getRemainingDelay(entity);
+        if (remaining <= 0) {
+          this.processExpired(entity);
+        } else {
+          this.offerDelay(remaining);
+        }
+      }
+      acc = 0;
+      if (entities.size() === 0) {
+        this.stop();
+      }
+    };
+
+    this.checkProcessing = function checkProcessing() {
+      if (running) {
+        acc += this.getWorld().getDelta();
+
+        if (acc >= delay) {
+          return true;
+        }
+      }
+      return false;
+    };
+  };
+
+  var delayedEntityProcessingSystem = ExtendHelper.extendSystem(entitySystem, "delayedEntityProcessingSystem", {
+    create: function (aspect) {
+      var self = entitySystem.create.call(this, aspect);
+      delayedEntityProcessingClosure.call(self);
+      return self;
+    },
+    /**
+     * Return the delay until this entity should be processed.
+     *
+     * @param entity entity
+     * @return delay
+     */
+    getRemainingDelay: function getRemainingDelay(entity) {
+      throw {"NotImplemented": "Not supported yet. Override getRemainingDelay when extending"};
+    },
+    /**
+     * Process a entity this system is interested in. Substract the accumulatedDelta
+     * from the entities defined delay.
+     *
+     * @param entity the entity to process.
+     * @param accumulatedDelta the delta time since this system was last executed.
+     */
+    processDelta: function processDelta(entity, accumulatedDelta) {
+      throw {"NotImplemented": "Not supported yet. Override processDelta when extending"};
+    },
+    processExpired: function processExpired(entity) {
+      throw {"NotImplemented": "Not supported yet. Override processExpired when extending"};
+    }
+  });
+  return delayedEntityProcessingSystem;
+})();
+
+/**
+ * A typical entity system. Use this when you need to process entities possessing the
+ * provided component types.
+ *
+ */
+var entityProcessingSystem = ExtendHelper.extendSystem(entitySystem, "entityProcessingSystem", {
+  create: function (aspect) {
+    var self = entitySystem.create.call(this, aspect);
+    return self;
+  },
+  /**
+   * Process a entity this system is interested in.
+   * @param entity the entity to process.
+   */
+  processEntity: function process(entity) {
+    throw ({"NotImplemented": "Not supported yet. Override process when extending"});
+  },
+  processEntities: function processEntities(entities) {
+    for (var i = 0; i < entities.size(); i++) {
+      this.processEntity(entities.get(i));
+    }
+  },
+  checkProcessing: function checkProcessing() {
+    return true;
+  }
+});
+
+/**
+ * If you need to process entities at a certain interval then use this.
+ * A typical usage would be to regenerate ammo or health at certain intervals, no need
+ * to do that every game loop, but perhaps every 100 ms. or every second.
+ *
+ */
+var intervalEntityProcessingSystem = ExtendHelper.extendSystem(entityProcessingSystem, "intervalEntityProcessingSystem", {
+  create: function (aspect, interval) {
+    var self = entityProcessingSystem.create.call(this, aspect);
+    self = intervalEntitySystem.create.call(self, aspect, interval);
+    return self;
+  }
+});
+
+/**
+ * A system that processes entities at a interval in milliseconds.
+ * A typical usage would be a collision system or physics system.
+ *
+ */
+var intervalEntitySystem = (function () {
+  var intervalEntitySystemClosure = function (interval) {
+    var acc = 0;
+
+    this.checkProcessing = function checkProcessing() {
+      acc += this.getWorld().getDelta();
+      if (acc >= interval) {
+        acc -= interval;
+        return true;
+      }
+      return false;
+    };
+  };
+
+  var intervalEntitySystem = ExtendHelper.extendSystem(entitySystem, "intervalEntitySystem", {
+    create: function (aspect, interval) {
+      var self = entitySystem.create.call(this, aspect);
+      intervalEntitySystemClosure.call(self, interval);
+      return self;
+    }
+  });
+  return intervalEntitySystem;
+})();
+
+/**
+ * This system has an empty aspect so it processes no entities, but it still gets invoked.
+ * You can use this system if you need to execute some game logic and not have to concern
+ * yourself about aspects or entities.
+ *
+ */
+var voidEntitySystem = ExtendHelper.extendSystem(entitySystem, "voidEntitySystem", {
+  create: function () {
+    var self = entitySystem.create.call(this, Aspect.getEmpty());
+    return self;
+  },
+  processSystem: function processSystem() {
+    throw ({"NotImplemented": "Not supported yet. Override processSystem when extending"});
+  },
+  processEntities: function processEntities() {
+    this.processSystem.call(this);
+  },
+
+  checkProcessing: function () {
+    return true;
+  }
+});
+
+/**
+ * Collection type a bit like ArrayList but does not preserve the order of its
+ * entities, speedwise it is very good, especially suited for games.
+ */
+var bag = function (capacity) {
+  var data = [];
+  var pSize = 0;
+  if (capacity) {
+    data.length = capacity;
+  } else {
+    data.length = 64;
+  }
+
+  /**
+   * Removes the element at the specified position in this Bag. does this by
+   * overwriting it was last element then removing last element
+   *
+   * @param index
+   *            the index of element to be removed
+   * @return element that was removed from the Bag; undefined if index is equal or greater than the bag's size
+   */
+  var removeByIndex = function (index) {
+    if (index >= pSize) {
+      return undefined;
+    }
+    var tmp = data[index];
+    data[index] = data[--pSize];
+    data[pSize] = null;
+    return tmp;
+  };
+
+  /**
+   * Remove and return the last object in the bag.
+   *
+   * @return the last object in the bag, null if empty.
+   */
+  var removeLast = function () {
+    if (pSize > 0) {
+      var tmp = data[--pSize];
+      data[pSize] = null;
+      return tmp;
+    }
+    return null;
+  };
+
+  /**
+   * Removes the first occurrence of the specified element from this Bag, if
+   * it is present. If the Bag does not contain the element, it is unchanged.
+   * does this by overwriting it was last element then removing last element
+   *
+   * @param e
+   *            element to be removed from this list, if present
+   * @return <tt>true</tt> if this list contained the specified element
+   */
+  var removeElement = function (e) {
+    var tmp;
+    for (var i = 0; i < pSize; i++) {
+      tmp = data[i];
+      if (e == tmp) {
+        data[i] = data[--pSize];
+        data[pSize] = null;
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Check if bag contains this element.
+   *
+   * @param e
+   * @return
+   */
+  var contains = function (e) {
+    for (var i = 0; i < pSize; i++) {
+      if (e == data[i]) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Removes from this Bag all of its elements that are contained in the
+   * specified Bag.
+   *
+   * @param removeBag
+   *            Bag containing elements to be removed from this Bag
+   * @return {@code true} if this Bag changed as a result of the call
+   */
+  var removeAll = function (removeBag) {
+    var modified = false;
+    var tmp;
+    for (var i = 0; i < removeBag.size(); i++) {
+      tmp = removeBag.get(i);
+      for (var j = 0; j < pSize; j++) {
+        if (tmp == data[j]) {
+          removeByIndex(j);
+          j--;
+          modified = true;
+          break;
+        }
+      }
+    }
+
+    return modified;
+  };
+
+  /**
+   * Returns the element at the specified position in Bag.
+   *
+   * @param index
+   *            index of the element to return
+   * @return the element at the specified position in bag
+   */
+  var get = function (index) {
+    return data[index];
+  };
+
+  /**
+   * Returns the number of elements in this bag.
+   *
+   * @return the number of elements in this bag
+   */
+  var size = function () {
+    return pSize;
+  };
+
+  /**
+   * Returns the number of elements the bag can hold without growing.
+   *
+   * @return the number of elements the bag can hold without growing.
+   */
+  var getCapacity = function () {
+    return data.length;
+  };
+
+  /**
+   * Checks if the internal storage supports this index.
+   *
+   * @param index
+   * @return
+   */
+  var isIndexWithinBounds = function (index) {
+    return index < getCapacity();
+  };
+
+  /**
+   * Returns true if this list contains no elements.
+   *
+   * @return true if this list contains no elements
+   */
+  var isEmpty = function () {
+    return pSize === 0;
+  };
+
+  /**
+   * Adds the specified element to the end of this bag. if needed also
+   * increases the capacity of the bag.
+   *
+   * @param e
+   *            element to be added to this list
+   */
+  var add = function (e) {
+    if (pSize === data.length) {
+      grow();
+    }
+    data[pSize++] = e;
+  };
+
+  /**
+   * Set element at specified index in the bag.
+   *
+   * @param index position of element
+   * @param e the element
+   */
+  var set = function (index, e) {
+    if (index >= data.length) {
+      grow(index * 2);
+    }
+    if (index > pSize) {
+      pSize = index + 1;
+    }
+    data[index] = e;
+  };
+
+  function grow(newCapacity) {
+    if (!newCapacity) {
+      newCapacity = Math.ceil((data.length * 3) / 2 + 1);
+    }
+    data.length = newCapacity;
+  }
+
+  /**
+   * Removes all of the elements from this bag. The bag will be empty after
+   * this call returns.
+   */
+  var clear = function () {
+    for (var i = 0; i < data.length; i++) {
+      data[i] = null;
+    }
+    pSize = 0;
+  };
+
+  /**
+   * Add all items into this bag.
+   * @param items a bag of items to add
+   */
+  var addAll = function (items) {
+    for (var i = 0; i < items.size(); i++) {
+      add(items.get(i));
+    }
+  };
+
+  return {
+    add: add,
+    addAll: addAll,
+    removeByIndex: removeByIndex,
+    removeLast: removeLast,
+    removeElement: removeElement,
+    removeAll: removeAll,
+    clear: clear,
+    get: get,
+    set: set,
+    getCapacity: getCapacity,
+    size: size,
+    contains: contains,
+    isIndexWithinBounds: isIndexWithinBounds,
+    isEmpty: isEmpty
+  };
+};
+
+/**
+ * Bitset implementation based on https://github.com/inexplicable/bitset
+ */
+function bitSet() {
+  var BITS_OF_A_WORD = 32,
+    SHIFTS_OF_A_WORD = 5;
+
+  var _words = [];
+
+  var whichWord = function (pos) {
+    return pos >> SHIFTS_OF_A_WORD;
+  };
+  var mask = function (pos) {
+    return 1 << (pos & 31);
+  };
+
+  var getWords = function () {
+    return _words;
+  };
+  var set = function (pos) {
+    if (pos < 0) {
+      return;
+    }
+    var which = whichWord(pos);
+    _words[which] = _words[which] | mask(pos);
+    return _words[which];
+  };
+  var clear = function (pos) {
+    if (pos < 0) {
+      return;
+    }
+    var which = whichWord(pos);
+    _words[which] = _words[which] & ~mask(pos);
+    return _words[which];
+  };
+  var get = function (pos) {
+    if (pos < 0) {
+      return undefined;
+    }
+    var which = whichWord(pos);
+    return _words[which] & mask(pos);
+  };
+  var maxWords = function () {
+    return _words.length;
+  };
+  var cardinality = function () {
+    var next, sum = 0;
+    for (next = 0; next < _words.length; next += 1) {
+      var nextWord = _words[next] || 0;
+      //this loops only the number of set bits, not 32 constant all the time!
+      for (var bits = nextWord; bits !== 0; bits &= (bits - 1)) {
+        sum += 1;
+      }
+    }
+    return sum;
+  };
+  var or = function (set) {
+    if (this === set) {
+      return this;
+    }
+
+    var next, commons = Math.min(maxWords(), set.maxWords());
+    var setWords = set.getWords();
+    for (next = 0; next < commons; next += 1) {
+      _words[next] = (_words[next] || 0) | (setWords[next] || 0);
+    }
+    if (commons < set.maxWords()) {
+      _words = _words.concat(setWords.slice(commons, set.maxWords()));
+    }
+    return this;
+  };
+  var and = function (set) {
+    if (this === set) {
+      return this;
+    }
+
+    var next,
+      commons = Math.min(maxWords(), set.maxWords());
+    var setWords = set.getWords();
+    for (next = 0; next < commons; next += 1) {
+      _words[next] = (_words[next] || 0) & (setWords[next] || 0);
+    }
+    if (commons > set.maxWords()) {
+      var length = Math.max(Math.ceil((set.maxWords() - commons)), 0);
+      var idx = 0;
+      var range = new Array(length);
+      while (idx < length) {
+        range[idx++] = commons;
+        commons += 1;
+      }
+      for (var i = 0; i < range.length; i++) {
+        _words.pop();
+      }
+    }
+    return this;
+  };
+  var xor = function (set) {
+    var next, commons = Math.min(maxWords(), set.maxWords());
+    var setWords = set.getWords();
+    for (next = 0; next < commons; next += 1) {
+      _words[next] = (_words[next] || 0) ^ (setWords[next] || 0);
+    }
+
+    var mw;
+    if (commons < set.maxWords()) {
+      mw = set.maxWords();
+      for (next = commons; next < mw; next += 1) {
+        _words[next] = (setWords[next] || 0) ^ 0;
+      }
+    } else {
+      mw = maxWords();
+      for (next = commons; next < mw; next += 1) {
+        _words[next] = (_words[next] || 0) ^ 0;
+      }
+    }
+    return this;
+  };
+  var nextSetBit = function (pos) {
+    var next = whichWord(pos);
+    //beyond max words
+    if (next >= _words.length) {
+      return -1;
+    }
+    //the very first word
+    var firstWord = _words[next],
+      mw = maxWords(),
+      bit;
+    if (firstWord) {
+      for (bit = pos & 31; bit < BITS_OF_A_WORD; bit += 1) {
+        if ((firstWord & mask(bit))) {
+          return (next << SHIFTS_OF_A_WORD) + bit;
+        }
+      }
+    }
+    for (next = next + 1; next < mw; next += 1) {
+      var nextWord = _words[next];
+      if (nextWord) {
+        for (bit = 0; bit < BITS_OF_A_WORD; bit += 1) {
+          if ((nextWord & mask(bit)) !== 0) {
+            return (next << SHIFTS_OF_A_WORD) + bit;
+          }
+        }
+      }
+    }
+    return -1;
+  };
+  var prevSetBit = function (pos) {
+    var prev = whichWord(pos);
+    //beyond max words
+    if (prev >= _words.length) {
+      return -1;
+    }
+    //the very last word
+    var lastWord = _words[prev],
+      bit;
+    if (lastWord) {
+      for (bit = pos & 31; bit >= 0; bit -= 1) {
+        if ((lastWord & mask(bit))) {
+          return (prev << SHIFTS_OF_A_WORD) + bit;
+        }
+      }
+    }
+    for (prev = prev - 1; prev >= 0; prev -= 1) {
+      var prevWord = _words[prev];
+      if (prevWord) {
+        for (bit = BITS_OF_A_WORD - 1; bit >= 0; bit -= 1) {
+          if ((prevWord & mask(bit)) !== 0) {
+            return (prev << SHIFTS_OF_A_WORD) + bit;
+          }
+        }
+      }
+    }
+    return -1;
+  };
+  var toString = function (radix) {
+    radix = radix || 10;
+    var tmp = [];
+    for (var i = 0; i < _words.length; i++) {
+      tmp.push((_words[i] || 0).toString(radix));
+    }
+    return '[' + tmp.join(', ') + ']';
+  };
+  var intersects = function (set) {
+    for (var i = Math.min(maxWords(), set.maxWords()) - 1; i >= 0; i--) {
+      if (_words[i] & set.getWords()[i]) {
+        return true;
+      }
+    }
+    return false;
+  };
+  var isEmpty = function () {
+    return _words.length === 0;
+  };
+
+  return {
+    getWords: getWords,
+    set: set,
+    get: get,
+    clear: clear,
+    maxWords: maxWords,
+    cardinality: cardinality,
+    or: or,
+    and: and,
+    xor: xor,
+    nextSetBit: nextSetBit,
+    prevSetBit: prevSetBit,
+    intersects: intersects,
+    isEmpty: isEmpty,
+    toString: toString
+  };
+}
+
+if (!Math.signum) {
+	Math.signum = function (x) {
+		return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+	};
+}
+
+var FastMath = {
+	_sin_a: -4 / this.SQUARED_PI,
+	_sin_b: 4 / Math.PI,
+	_sin_p: 9 / 40,
+	_asin_a: -0.0481295276831013447,
+	_asin_b: -0.343835993947915197,
+	_asin_c: 0.962761848425913169,
+	_asin_d: 1.00138940860107040,
+
+	SQUARED_PI: Math.PI * Math.PI,
+	HALF_PI: Math.PI * 0.5,
+	TWO_PI: Math.PI * 2,
+	THREE_PI_HALVES: this.TWO_PI - this.HALF_PI,
+	cos: function (x) {
+		return this.sin(x + ((x > this.HALF_PI) ? -this.THREE_PI_HALVES : this.HALF_PI));
+	},
+	sin: function (x) {
+		x = this._sin_a * x * Math.abs(x) + this._sin_b * x;
+		return this._sin_p * (x * Math.abs(x) - x) + x;
+	},
+	tan: function (x) {
+		return sin(x) / cos(x);
+	},
+	asin: function (x) {
+		return x * (Math.abs(x) * (Math.abs(x) * this._asin_a + this._asin_b) + this._asin_c) + 
+			Math.signum(x) * (this._asin_d - Math.sqrt(1 - x * x));
+	},
+	acos: function (x) {
+		return this.HALF_PI - this.asin(x);
+	},
+	atan: function (x) {
+		return (Math.abs(x) < 1) ? x / (1 + this._atan_a * x * x) : Math.signum(x) * this.HALF_PI - x / (x * x + this._atan_a);
+	}
+};
+
+var timer = {
+  _delay: 0,
+  _repeat: false,
+  _acc: 0,
+  _done: false,
+  _stopped: false,
+  execute: null,
+  create: function (delay, repeat, executeFunction) {
+    var self = Object.create(this);
+    self._delay = delay;
+    if (typeof repeat === "boolean") {
+      self._repeat = repeat;
+    }
+    self.execute = executeFunction;
+    return self;
+  },
+  update: function update(delta) {
+    if (!this._done && !this._stopped) {
+      this._acc += delta;
+
+      if (this._acc >= this._delay) {
+        this._acc -= this._delay;
+
+        if (this._repeat) {
+          this.reset();
+        } else {
+          this._done = true;
+        }
+
+        if (typeof this.execute === "function") {
+          this.execute();
+        }
+      }
+    }
+  },
+  reset: function reset() {
+    this._stopped = false;
+    this._done = false;
+    this._acc = 0;
+  },
+  isDone: function isDone() {
+    return this._done;
+  },
+  isRunning: function isRunning() {
+    return !this._done && this._acc < this._delay && !this._stopped;
+  },
+  stop: function stop() {
+    this._stopped = true;
+  },
+  setDelay: function setDelay(delay) {
+    this._delay = delay;
+  },
+  getPercentageRemaining: function getPercentageRemaining() {
+    if (this._done)
+      return 100;
+    else if (this._stopped)
+      return 0;
+    else
+      return 1 - (this._delay - this._acc) / this._delay;
+  },
+  getDelay: function getDelay() {
+    return this._delay;
+  }
+};
+
+function uuid() {
+  var uuid4 = "", i, random;
+  for (i = 0; i < 32; i++) {
+    random = Math.random() * 16 | 0;
+
+    if (i == 8 || i == 12 || i == 16 || i == 20) {
+      uuid4 += "-";
+    }
+    uuid4 += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
+  }
+  return uuid4;
+}
+
+/**
  * The primary instance for the framework. It contains all the managers.
  *
  * You must use this to create, delete and retrieve entities.
@@ -1885,575 +2469,38 @@ var world = (function () {
   return world;
 })();
 
-/**
- * The purpose of this class is to allow systems to execute at varying intervals.
- *
- * An example system would be an ExpirationSystem, that deletes entities after a certain
- * lifetime. Instead of running a system that decrements a timeLeft value for each
- * entity, you can simply use this system to execute in a future at a time of the shortest
- * lived entity, and then reset the system to run at a time in a future at a time of the
- * shortest lived entity, etc.
- *
- * Another example system would be an AnimationSystem. You know when you have to animate
- * a certain entity, e.g. in 300 milliseconds. So you can set the system to run in 300 ms.
- * to perform the animation.
- *
- * This will save CPU cycles in some scenarios.
- *
- * Implementation notes:
- * In order to start the system you need to override the inserted(Entity e) method,
- * look up the delay time from that entity and offer it to the system by using the
- * offerDelay(float delay) method.
- * Also, when processing the entities you must also call offerDelay(float delay)
- * for all valid entities.
- *
- */
-var delayedEntityProcessingSystem = (function () {
-  var delayedEntityProcessingClosure = function () {
-    var delay = 0;
-    var running = false;
-    var acc = 0;
+var artemis = {
+  // utils
+  bag: bag,
+  bitSet: bitSet,
+  fastMath: FastMath,
+  timer: timer,
+  // main classes
+  world: world,
+  manager: manager,
+  entity: entity,
+  entityManager: entityManager,
+  entityObserver: entityObserver,
+  entitySystem: entitySystem,
+  component: component,
+  componentManager: componentManager,
+  // statics
+  Aspect: Aspect,
+  ComponentMapper: ComponentMapper,
+  ComponentType: ComponentType,
+  ExtendHelper: ExtendHelper,
+  // managers
+  groupManager: groupManager,
+  playerManager: playerManager,
+  tagManager: tagManager,
+  teamManager: teamManager,
+  // systems
+  delayedEntityProcessingSystem: delayedEntityProcessingSystem,
+  entityProcessingSystem: entityProcessingSystem,
+  intervalEntitySystem: intervalEntitySystem,
+  intervalEntityProcessingSystem: intervalEntityProcessingSystem,
+  voidEntitySystem: voidEntitySystem
+};
 
-    /**
-     * Start processing of entities after a certain amount of delta time.
-     *
-     * Cancels current delayed run and starts a new one.
-     *
-     * @param delta time delay until processing starts.
-     */
-    this.restart = function restart(delta) {
-      delay = delta;
-      acc = 0;
-      running = true;
-    };
-
-    /**
-     * Restarts the system only if the delay offered is shorter than the
-     * time that the system is currently scheduled to execute at.
-     *
-     * If the system is already stopped (not running) then the offered
-     * delay will be used to restart the system with no matter its value.
-     *
-     * If the system is already counting down, and the offered delay is
-     * larger than the time remaining, the system will ignore it. If the
-     * offered delay is shorter than the time remaining, the system will
-     * restart itself to run at the offered delay.
-     *
-     * @param delay
-     */
-    this.offerDelay = function offerDelay(delay) {
-      if (!running || delay < this.getRemainingTimeUntilProcessing()) {
-        this.restart(delay);
-      }
-    };
-
-    /**
-     * Get the time until the system is scheduled to run at.
-     * Returns zero (0) if the system is not running.
-     * Use isRunning() before checking this value.
-     *
-     * @return time when system will run at.
-     */
-    this.getRemainingTimeUntilProcessing = function getRemainingTimeUntilProcessing() {
-      if (running) {
-        return delay - acc;
-      }
-      return 0;
-    };
-
-    /**
-     * Stops the system from running, aborts current countdown.
-     * Call offerDelay or restart to run it again.
-     */
-    this.stop = function stop() {
-      running = false;
-      acc = 0;
-    };
-
-    this.inserted = function inserted(entity) {
-      var delay = this.getRemainingDelay(entity);
-      if (delay > 0) {
-        this.offerDelay(delay);
-      }
-    };
-
-    /**
-     * Get the initial delay that the system was ordered to process entities after.
-     *
-     * @return the originally set delay.
-     */
-    this.getInitialTimeDelay = function getInitialTimeDelay() {
-      return delay;
-    };
-
-    /**
-     * Check if the system is counting down towards processing.
-     *
-     * @return true if it's counting down, false if it's not running.
-     */
-    this.isRunning = function isRunning() {
-      return running;
-    };
-
-    this.processEntities = function processEntities(entities) {
-      var entity, remaining;
-      for (var i = 0; i < entities.size(); i++) {
-        entity = entities.get(i);
-        this.processDelta(entity, acc);
-        remaining = this.getRemainingDelay(entity);
-        if (remaining <= 0) {
-          this.processExpired(entity);
-        } else {
-          this.offerDelay(remaining);
-        }
-      }
-      acc = 0;
-      if (entities.size() === 0) {
-        this.stop();
-      }
-    };
-
-    this.checkProcessing = function checkProcessing() {
-      if (running) {
-        acc += this.getWorld().getDelta();
-
-        if (acc >= delay) {
-          return true;
-        }
-      }
-      return false;
-    };
-  };
-
-  var delayedEntityProcessingSystem = ExtendHelper.extendSystem(entitySystem, "delayedEntityProcessingSystem", {
-    create: function (aspect) {
-      var self = entitySystem.create.call(this, aspect);
-      delayedEntityProcessingClosure.call(self);
-      return self;
-    },
-    /**
-     * Return the delay until this entity should be processed.
-     *
-     * @param entity entity
-     * @return delay
-     */
-    getRemainingDelay: function getRemainingDelay(entity) {
-      throw {"NotImplemented": "Not supported yet. Override getRemainingDelay when extending"};
-    },
-    /**
-     * Process a entity this system is interested in. Substract the accumulatedDelta
-     * from the entities defined delay.
-     *
-     * @param entity the entity to process.
-     * @param accumulatedDelta the delta time since this system was last executed.
-     */
-    processDelta: function processDelta(entity, accumulatedDelta) {
-      throw {"NotImplemented": "Not supported yet. Override processDelta when extending"};
-    },
-    processExpired: function processExpired(entity) {
-      throw {"NotImplemented": "Not supported yet. Override processExpired when extending"};
-    }
-  });
-  return delayedEntityProcessingSystem;
-})();
-
-/**
- * A typical entity system. Use this when you need to process entities possessing the
- * provided component types.
- *
- */
-var entityProcessingSystem = ExtendHelper.extendSystem(entitySystem, "entityProcessingSystem", {
-  create: function (aspect) {
-    var self = entitySystem.create.call(this, aspect);
-    return self;
-  },
-  /**
-   * Process a entity this system is interested in.
-   * @param entity the entity to process.
-   */
-  processEntity: function process(entity) {
-    throw ({"NotImplemented": "Not supported yet. Override process when extending"});
-  },
-  processEntities: function processEntities(entities) {
-    for (var i = 0; i < entities.size(); i++) {
-      this.processEntity(entities.get(i));
-    }
-  },
-  checkProcessing: function checkProcessing() {
-    return true;
-  }
-});
-
-/**
- * If you need to process entities at a certain interval then use this.
- * A typical usage would be to regenerate ammo or health at certain intervals, no need
- * to do that every game loop, but perhaps every 100 ms. or every second.
- *
- */
-var intervalEntityProcessingSystem = ExtendHelper.extendSystem(entityProcessingSystem, "intervalEntityProcessingSystem", {
-  create: function (aspect, interval) {
-    var self = entityProcessingSystem.create.call(this, aspect);
-    self = intervalEntitySystem.create.call(self, aspect, interval);
-    return self;
-  }
-});
-
-/**
- * A system that processes entities at a interval in milliseconds.
- * A typical usage would be a collision system or physics system.
- *
- */
-var intervalEntitySystem = (function () {
-  var intervalEntitySystemClosure = function (interval) {
-    var acc = 0;
-
-    this.checkProcessing = function checkProcessing() {
-      acc += this.getWorld().getDelta();
-      if (acc >= interval) {
-        acc -= interval;
-        return true;
-      }
-      return false;
-    };
-  };
-
-  var intervalEntitySystem = ExtendHelper.extendSystem(entitySystem, "intervalEntitySystem", {
-    create: function (aspect, interval) {
-      var self = entitySystem.create.call(this, aspect);
-      intervalEntitySystemClosure.call(self, interval);
-      return self;
-    }
-  });
-  return intervalEntitySystem;
-})();
-
-/**
- * This system has an empty aspect so it processes no entities, but it still gets invoked.
- * You can use this system if you need to execute some game logic and not have to concern
- * yourself about aspects or entities.
- *
- */
-var voidEntitySystem = ExtendHelper.extendSystem(entitySystem, "voidEntitySystem", {
-  create: function () {
-    var self = entitySystem.create.call(this, Aspect.getEmpty());
-    return self;
-  },
-  processSystem: function processSystem() {
-    throw ({"NotImplemented": "Not supported yet. Override processSystem when extending"});
-  },
-  processEntities: function processEntities() {
-    this.processSystem.call(this);
-  },
-
-  checkProcessing: function () {
-    return true;
-  }
-});
-
-/**
- * If you need to group your entities together, e.g. tanks going into "units" group or explosions into "effects",
- * then use this manager. You must retrieve it using world instance.
- *
- * A entity can be assigned to more than one group.
- *
- */
-var groupManager = (function () {
-  var groupManagerClosure = function () {
-    var entitiesByGroup = Object.create(null);
-    var groupsByEntity = Object.create(null);
-
-    /**
-     * Set the group of the entity.
-     *
-     * @param entity to add into the group.
-     * @param group group to add the entity into.
-     */
-    this.add = function add(entity, group) {
-      var entities = entitiesByGroup[group];
-      if (!entities) {
-        entities = bag();
-        entitiesByGroup[group] = entities;
-      }
-      entities.add(entity);
-
-      var groups = groupsByEntity[entity.getUuid()];
-      if (!groups) {
-        groups = bag();
-        groupsByEntity[entity.getUuid()] = groups;
-      }
-      groups.add(group);
-    };
-
-    /**
-     * Remove the entity from the specified group.
-     * @param entity
-     * @param group
-     */
-    this.remove = function remove(entity, group) {
-      var entities = entitiesByGroup[group];
-      if (entities) {
-        entities.removeElement(entity);
-      }
-      var groups = groupsByEntity[entity.getUuid()];
-      if (groups) {
-        groups.removeElement(group);
-      }
-    };
-
-    function removeFromAllGroups(entity) {
-      var groups = groupsByEntity[entity.getUuid()];
-      if (groups) {
-        var entities;
-        for (var i = 0; i < groups.size(); i++) {
-          entities = entitiesByGroup[groups.get(i)];
-          if (entities) {
-            entities.removeElement(entity);
-          }
-        }
-        groups.clear();
-      }
-    }
-
-    this.removeFromAllGroups = removeFromAllGroups;
-
-    /**
-     * Get all entities that belong to the provided group.
-     * @param group name of the group.
-     * @return read-only bag of entities belonging to the group.
-     */
-    this.getEntities = function getEntities(group) {
-      var entities = entitiesByGroup[group];
-      if (!entities) {
-        entities = bag();
-        entitiesByGroup[group] = entities;
-      }
-      return entities;
-    };
-
-    /**
-     * @param entity
-     * @return the groups the entity belongs to, null if none.
-     */
-    this.getGroups = function getGroups(entity) {
-      if (isInAnyGroup(entity)) {
-        return groupsByEntity[entity.getUuid()];
-      }
-      return null;
-    };
-
-    /**
-     * Checks if the entity belongs to any group.
-     * @param entity to check.
-     * @return true if it is in any group, false if none.
-     */
-    function isInAnyGroup(entity) {
-      var groups = groupsByEntity[entity.getUuid()];
-      return groups && !groups.isEmpty();
-    }
-
-    this.isInAnyGroup = isInAnyGroup;
-
-    /**
-     * Check if the entity is in the supplied group.
-     * @param entity to check for.
-     * @param group the group to check in.
-     * @return true if the entity is in the supplied group, false if not.
-     */
-    this.isInGroup = function isInGroup(entity, group) {
-      var groups = groupsByEntity[entity.getUuid()];
-      return groups && groups.contains(group);
-    };
-
-    this.deleted = function deleted(entity) {
-      removeFromAllGroups(entity);
-    };
-  };
-
-  var groupManager = ExtendHelper.extendManager(manager, "groupManager", {
-    create: function () {
-      var self = Object.create(this);
-      groupManagerClosure.call(self);
-      return self;
-    }
-  });
-  return groupManager;
-})();
-
-/**
- * You may sometimes want to specify to which player an entity belongs to.
- *
- * An entity can only belong to a single player at a time.
- *
- */
-var playerManager = (function () {
-  var playerManagerClosure = function () {
-    var playerByEntity = Object.create(null);
-    var entitiesByPlayer = Object.create(null);
-
-    this.setPlayer = function setPlayer(entity, player) {
-      playerByEntity[entity.getUuid()] = player;
-      var entities = entitiesByPlayer[player];
-      if (!entities) {
-        entities = bag();
-        entitiesByPlayer[player] = entities;
-      }
-      entities.add(entity);
-    };
-
-    this.getEntitiesOfPlayer = function getEntitiesOfPlayer(player) {
-      var entities = entitiesByPlayer[player];
-      if (!entities) {
-        entities = bag();
-        entitiesByPlayer[player] = entities;
-      }
-      return entities;
-    };
-
-    function removeFromPlayer(entity) {
-      var player = playerByEntity[entity.getUuid()];
-      if (player) {
-        var entities = entitiesByPlayer[player];
-        if (entities) {
-          entities.removeElement(entity);
-        }
-      }
-    }
-
-    this.removeFromPlayer = removeFromPlayer;
-
-    this.getPlayer = function getPlayer(entity) {
-      return playerByEntity[entity.getUuid()];
-    };
-
-    this.deleted = function deleted(entity) {
-      removeFromPlayer(entity);
-    };
-  };
-
-  var playerManager = ExtendHelper.extendManager(manager, "playerManager", {
-    create: function () {
-      var self = Object.create(this);
-      playerManagerClosure.call(self);
-      return self;
-    }
-  });
-  return playerManager;
-})();
-
-
-/**
- * If you need to tag any entity, use this. A typical usage would be to tag
- * entities such as "PLAYER", "BOSS" or something that is very unique.
- *
- */
-var tagManager = (function () {
-  var tagManagerClosure = function () {
-    var entitiesByTag = Object.create(Object.prototype);
-    var tagsByEntity = Object.create(null);
-
-    this.register = function register(tag, entity) {
-      entitiesByTag[tag] = entity;
-      tagsByEntity[entity.getUuid()] = tag;
-    };
-
-    this.unregister = function unregister(tag) {
-      var entity = entitiesByTag[tag];
-      delete entitiesByTag[tag];
-      delete tagsByEntity[entity.getUuid()];
-    };
-
-    this.isRegistered = function isRegistered(tag) {
-      return entitiesByTag[tag] ? true : false;
-    };
-
-    this.getEntity = function getEntity(tag) {
-      return entitiesByTag[tag];
-    };
-
-    this.getRegisteredTags = function getRegisteredTags() {
-      var tags = [];
-      for (var key in entitiesByTag) {
-        if (entitiesByTag.hasOwnProperty(key)) {
-          tags.push(key);
-        }
-      }
-      return tags;
-    };
-
-    this.deleted = function deleted(entity) {
-      var removedTag = tagsByEntity[entity.getUuid()];
-      delete tagsByEntity[entity.getUuid()];
-      if (removedTag !== null) {
-        delete entitiesByTag[removedTag];
-      }
-    };
-  };
-
-  var tagManager = ExtendHelper.extendManager(manager, "tagManager", {
-    create: function () {
-      var self = Object.create(this);
-      tagManagerClosure.call(self);
-      return self;
-    }
-  });
-  return tagManager;
-})();
-
-/**
- * Use this class together with PlayerManager.
- *
- * You may sometimes want to create teams in your game, so that
- * some players are team mates.
- *
- * A player can only belong to a single team.
- *
- */
-var teamManager = (function () {
-  var teamManagerClosure = function () {
-    var playersByTeam = Object.create(null);
-    var teamByPlayer = Object.create(null);
-
-    this.getTeam = function getTeam(player) {
-      return teamByPlayer[player];
-    };
-
-    this.setTeam = function setTeam(player, team) {
-      removeFromTeam(player);
-
-      teamByPlayer[player] = team;
-
-      var players = playersByTeam[team];
-      if (!players) {
-        players = bag();
-        playersByTeam[team] = players;
-      }
-      players.add(player);
-    };
-
-    this.getPlayers = function getPlayers(team) {
-      return playersByTeam[team];
-    };
-
-    function removeFromTeam(player) {
-      var team = teamByPlayer[player];
-      delete teamByPlayer[player];
-      if (!team) {
-        var players = playersByTeam[team];
-        if (!players) {
-          players.removeElement(player);
-        }
-      }
-    }
-
-    this.removeFromTeam = removeFromTeam;
-  };
-
-  var teamManager = ExtendHelper.extendManager(manager, "managerType", {
-    create: function () {
-      var self = Object.create(this);
-      teamManagerClosure.call(self);
-      return self;
-    }
-  });
-  return teamManager;
-})();
+  return artemis;
+}));
