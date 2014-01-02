@@ -1,4 +1,4 @@
-/*! ArtemisJs - v0.0.1 - 2013-12-31 */
+/*! ArtemisJs - v0.0.1 - 2014-01-02 */
 
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -9,6 +9,662 @@
     root.artemis = factory();
   }
 }(this, function () {
+/**
+ * Collection type a bit like ArrayList but does not preserve the order of its
+ * entities, speedwise it is very good, especially suited for games.
+ */
+var bag = function (capacity) {
+  var data = [];
+  var pSize = 0;
+  if (capacity) {
+    data.length = capacity;
+  } else {
+    data.length = 64;
+  }
+
+  /**
+   * Removes the element at the specified position in this Bag. does this by
+   * overwriting it was last element then removing last element
+   *
+   * @param index
+   *            the index of element to be removed
+   * @return element that was removed from the Bag; undefined if index is equal or greater than the bag's size
+   */
+  var removeByIndex = function (index) {
+    if (index >= pSize) {
+      return undefined;
+    }
+    var tmp = data[index];
+    data[index] = data[--pSize];
+    data[pSize] = null;
+    return tmp;
+  };
+
+  /**
+   * Remove and return the last object in the bag.
+   *
+   * @return the last object in the bag, null if empty.
+   */
+  var removeLast = function () {
+    if (pSize > 0) {
+      var tmp = data[--pSize];
+      data[pSize] = null;
+      return tmp;
+    }
+    return null;
+  };
+
+  /**
+   * Removes the first occurrence of the specified element from this Bag, if
+   * it is present. If the Bag does not contain the element, it is unchanged.
+   * does this by overwriting it was last element then removing last element
+   *
+   * @param e
+   *            element to be removed from this list, if present
+   * @return <tt>true</tt> if this list contained the specified element
+   */
+  var removeElement = function (e) {
+    var tmp;
+    for (var i = 0; i < pSize; i++) {
+      tmp = data[i];
+      if (e == tmp) {
+        data[i] = data[--pSize];
+        data[pSize] = null;
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Check if bag contains this element.
+   *
+   * @param e
+   * @return
+   */
+  var contains = function (e) {
+    for (var i = 0; i < pSize; i++) {
+      if (e == data[i]) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Removes from this Bag all of its elements that are contained in the
+   * specified Bag.
+   *
+   * @param removeBag
+   *            Bag containing elements to be removed from this Bag
+   * @return {@code true} if this Bag changed as a result of the call
+   */
+  var removeAll = function (removeBag) {
+    var modified = false;
+    var tmp;
+    for (var i = 0; i < removeBag.size(); i++) {
+      tmp = removeBag.get(i);
+      for (var j = 0; j < pSize; j++) {
+        if (tmp == data[j]) {
+          removeByIndex(j);
+          j--;
+          modified = true;
+          break;
+        }
+      }
+    }
+
+    return modified;
+  };
+
+  /**
+   * Returns the element at the specified position in Bag.
+   *
+   * @param index
+   *            index of the element to return
+   * @return the element at the specified position in bag
+   */
+  var get = function (index) {
+    return data[index];
+  };
+
+  /**
+   * Returns the number of elements in this bag.
+   *
+   * @return the number of elements in this bag
+   */
+  var size = function () {
+    return pSize;
+  };
+
+  /**
+   * Returns the number of elements the bag can hold without growing.
+   *
+   * @return the number of elements the bag can hold without growing.
+   */
+  var getCapacity = function () {
+    return data.length;
+  };
+
+  /**
+   * Checks if the internal storage supports this index.
+   *
+   * @param index
+   * @return
+   */
+  var isIndexWithinBounds = function (index) {
+    return index < getCapacity();
+  };
+
+  /**
+   * Returns true if this list contains no elements.
+   *
+   * @return true if this list contains no elements
+   */
+  var isEmpty = function () {
+    return pSize === 0;
+  };
+
+  /**
+   * Adds the specified element to the end of this bag. if needed also
+   * increases the capacity of the bag.
+   *
+   * @param e
+   *            element to be added to this list
+   */
+  var add = function (e) {
+    if (pSize === data.length) {
+      grow();
+    }
+    data[pSize++] = e;
+  };
+
+  /**
+   * Set element at specified index in the bag.
+   *
+   * @param index position of element
+   * @param e the element
+   */
+  var set = function (index, e) {
+    if (index >= data.length) {
+      grow(index * 2);
+    }
+    if (index > pSize) {
+      pSize = index + 1;
+    }
+    data[index] = e;
+  };
+
+  function grow(newCapacity) {
+    if (!newCapacity) {
+      newCapacity = Math.ceil((data.length * 3) / 2 + 1);
+    }
+    data.length = newCapacity;
+  }
+
+  /**
+   * Removes all of the elements from this bag. The bag will be empty after
+   * this call returns.
+   */
+  var clear = function () {
+    for (var i = 0; i < data.length; i++) {
+      data[i] = null;
+    }
+    pSize = 0;
+  };
+
+  /**
+   * Add all items into this bag.
+   * @param items a bag of items to add
+   */
+  var addAll = function (items) {
+    for (var i = 0; i < items.size(); i++) {
+      add(items.get(i));
+    }
+  };
+
+  return {
+    add: add,
+    addAll: addAll,
+    removeByIndex: removeByIndex,
+    removeLast: removeLast,
+    removeElement: removeElement,
+    removeAll: removeAll,
+    clear: clear,
+    get: get,
+    set: set,
+    getCapacity: getCapacity,
+    size: size,
+    contains: contains,
+    isIndexWithinBounds: isIndexWithinBounds,
+    isEmpty: isEmpty
+  };
+};
+
+/**
+ * base prototype to be extended
+ * @type {prototype|*}
+ */
+var base = Object.create(Object.prototype);
+
+/**
+ * Extend this object with one or more objects.
+ * Copy all property to extending object (concatenation)
+ * If private members are needed, use blueprint/closure
+ */
+Object.defineProperty(base, "extend", {
+  value: function () {
+    var hasOwnProperty = Object.hasOwnProperty;
+    var object = Object.create(this);
+    var length = arguments.length;
+    var index = length;
+
+    while (index) {
+      var extension = arguments[length - (index--)];
+
+      for (var property in extension) {
+        if (hasOwnProperty.call(extension, property) || typeof object[property] === "undefined") {
+          object[property] = extension[property];
+        }
+      }
+    }
+
+    return object;
+  },
+  configurable: false,
+  enumerable: false,
+  writable: true
+});
+
+/**
+ * Bitset implementation based on https://github.com/inexplicable/bitset
+ */
+function bitSet() {
+  var BITS_OF_A_WORD = 32,
+    SHIFTS_OF_A_WORD = 5;
+
+  var _words = [];
+
+  var whichWord = function (pos) {
+    return pos >> SHIFTS_OF_A_WORD;
+  };
+  var mask = function (pos) {
+    return 1 << (pos & 31);
+  };
+
+  var getWords = function () {
+    return _words;
+  };
+  var set = function (pos) {
+    if (pos < 0) {
+      return;
+    }
+    var which = whichWord(pos);
+    _words[which] = _words[which] | mask(pos);
+    return _words[which];
+  };
+  var clear = function (pos) {
+    if (pos < 0) {
+      return;
+    }
+    var which = whichWord(pos);
+    _words[which] = _words[which] & ~mask(pos);
+    return _words[which];
+  };
+  var get = function (pos) {
+    if (pos < 0) {
+      return undefined;
+    }
+    var which = whichWord(pos);
+    return _words[which] & mask(pos);
+  };
+  var maxWords = function () {
+    return _words.length;
+  };
+  var cardinality = function () {
+    var next, sum = 0;
+    for (next = 0; next < _words.length; next += 1) {
+      var nextWord = _words[next] || 0;
+      //this loops only the number of set bits, not 32 constant all the time!
+      for (var bits = nextWord; bits !== 0; bits &= (bits - 1)) {
+        sum += 1;
+      }
+    }
+    return sum;
+  };
+  var or = function (set) {
+    if (this === set) {
+      return this;
+    }
+
+    var next, commons = Math.min(maxWords(), set.maxWords());
+    var setWords = set.getWords();
+    for (next = 0; next < commons; next += 1) {
+      _words[next] = (_words[next] || 0) | (setWords[next] || 0);
+    }
+    if (commons < set.maxWords()) {
+      _words = _words.concat(setWords.slice(commons, set.maxWords()));
+    }
+    return this;
+  };
+  var and = function (set) {
+    if (this === set) {
+      return this;
+    }
+
+    var next,
+      commons = Math.min(maxWords(), set.maxWords());
+    var setWords = set.getWords();
+    for (next = 0; next < commons; next += 1) {
+      _words[next] = (_words[next] || 0) & (setWords[next] || 0);
+    }
+    if (commons > set.maxWords()) {
+      var length = Math.max(Math.ceil((set.maxWords() - commons)), 0);
+      var idx = 0;
+      var range = new Array(length);
+      while (idx < length) {
+        range[idx++] = commons;
+        commons += 1;
+      }
+      for (var i = 0; i < range.length; i++) {
+        _words.pop();
+      }
+    }
+    return this;
+  };
+  var xor = function (set) {
+    var next, commons = Math.min(maxWords(), set.maxWords());
+    var setWords = set.getWords();
+    for (next = 0; next < commons; next += 1) {
+      _words[next] = (_words[next] || 0) ^ (setWords[next] || 0);
+    }
+
+    var mw;
+    if (commons < set.maxWords()) {
+      mw = set.maxWords();
+      for (next = commons; next < mw; next += 1) {
+        _words[next] = (setWords[next] || 0) ^ 0;
+      }
+    } else {
+      mw = maxWords();
+      for (next = commons; next < mw; next += 1) {
+        _words[next] = (_words[next] || 0) ^ 0;
+      }
+    }
+    return this;
+  };
+  var nextSetBit = function (pos) {
+    var next = whichWord(pos);
+    //beyond max words
+    if (next >= _words.length) {
+      return -1;
+    }
+    //the very first word
+    var firstWord = _words[next],
+      mw = maxWords(),
+      bit;
+    if (firstWord) {
+      for (bit = pos & 31; bit < BITS_OF_A_WORD; bit += 1) {
+        if ((firstWord & mask(bit))) {
+          return (next << SHIFTS_OF_A_WORD) + bit;
+        }
+      }
+    }
+    for (next = next + 1; next < mw; next += 1) {
+      var nextWord = _words[next];
+      if (nextWord) {
+        for (bit = 0; bit < BITS_OF_A_WORD; bit += 1) {
+          if ((nextWord & mask(bit)) !== 0) {
+            return (next << SHIFTS_OF_A_WORD) + bit;
+          }
+        }
+      }
+    }
+    return -1;
+  };
+  var prevSetBit = function (pos) {
+    var prev = whichWord(pos);
+    //beyond max words
+    if (prev >= _words.length) {
+      return -1;
+    }
+    //the very last word
+    var lastWord = _words[prev],
+      bit;
+    if (lastWord) {
+      for (bit = pos & 31; bit >= 0; bit -= 1) {
+        if ((lastWord & mask(bit))) {
+          return (prev << SHIFTS_OF_A_WORD) + bit;
+        }
+      }
+    }
+    for (prev = prev - 1; prev >= 0; prev -= 1) {
+      var prevWord = _words[prev];
+      if (prevWord) {
+        for (bit = BITS_OF_A_WORD - 1; bit >= 0; bit -= 1) {
+          if ((prevWord & mask(bit)) !== 0) {
+            return (prev << SHIFTS_OF_A_WORD) + bit;
+          }
+        }
+      }
+    }
+    return -1;
+  };
+  var toString = function (radix) {
+    radix = radix || 10;
+    var tmp = [];
+    for (var i = 0; i < _words.length; i++) {
+      tmp.push((_words[i] || 0).toString(radix));
+    }
+    return '[' + tmp.join(', ') + ']';
+  };
+  var intersects = function (set) {
+    for (var i = Math.min(maxWords(), set.maxWords()) - 1; i >= 0; i--) {
+      if (_words[i] & set.getWords()[i]) {
+        return true;
+      }
+    }
+    return false;
+  };
+  var isEmpty = function () {
+    return _words.length === 0;
+  };
+
+  return {
+    getWords: getWords,
+    set: set,
+    get: get,
+    clear: clear,
+    maxWords: maxWords,
+    cardinality: cardinality,
+    or: or,
+    and: and,
+    xor: xor,
+    nextSetBit: nextSetBit,
+    prevSetBit: prevSetBit,
+    intersects: intersects,
+    isEmpty: isEmpty,
+    toString: toString
+  };
+}
+
+var ExtendHelper = (function () {
+  function extend(base, typeInfo) {
+    var extensions = Array.prototype.slice.call(arguments, 2);
+    var extended = base.extend.apply(base, extensions);
+    Object.defineProperty(extended, typeInfo.name, {
+      value: typeInfo.value,
+      configurable: true,
+      enumerable: false,
+      writable: false
+    });
+    return extended;
+  }
+
+  return {
+    extendSystem: function (baseSystem, newSystemType, extensions) {
+      var args = [];
+      args.length = arguments.length;
+      args[0] = arguments[0];
+      args[1] = {
+        name: "systemType",
+        value: newSystemType
+      };
+      for (var i = 2; i < arguments.length; i++) {
+        args.push(arguments[i]);
+      }
+      return extend.apply(null, args);
+    },
+    extendManager: function (baseManager, newManagerType, extensions) {
+      var args = [];
+      args.length = arguments.length;
+      args[0] = arguments[0];
+      args[1] = {
+        name: "managerType",
+        value: newManagerType
+      };
+      for (var i = 2; i < arguments.length; i++) {
+        args.push(arguments[i]);
+      }
+      return extend.apply(null, args);
+    },
+    extendComponent: function (baseComponent, newComponentType, extensions) {
+      var args = [];
+      args.length = arguments.length;
+      args[0] = baseComponent;
+      args[1] = {
+        name: "componentType",
+        value: newComponentType
+      };
+      for (var i = 2; i < arguments.length; i++) {
+        if (arguments[i]) {
+          args.push(arguments[i]);
+        }
+      }
+      return extend.apply(null, args);
+    }
+  };
+})();
+
+if (!Math.signum) {
+	Math.signum = function (x) {
+		return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+	};
+}
+
+var FastMath = {
+	_sin_a: -4 / this.SQUARED_PI,
+	_sin_b: 4 / Math.PI,
+	_sin_p: 9 / 40,
+	_asin_a: -0.0481295276831013447,
+	_asin_b: -0.343835993947915197,
+	_asin_c: 0.962761848425913169,
+	_asin_d: 1.00138940860107040,
+
+	SQUARED_PI: Math.PI * Math.PI,
+	HALF_PI: Math.PI * 0.5,
+	TWO_PI: Math.PI * 2,
+	THREE_PI_HALVES: this.TWO_PI - this.HALF_PI,
+	cos: function (x) {
+		return this.sin(x + ((x > this.HALF_PI) ? -this.THREE_PI_HALVES : this.HALF_PI));
+	},
+	sin: function (x) {
+		x = this._sin_a * x * Math.abs(x) + this._sin_b * x;
+		return this._sin_p * (x * Math.abs(x) - x) + x;
+	},
+	tan: function (x) {
+		return sin(x) / cos(x);
+	},
+	asin: function (x) {
+		return x * (Math.abs(x) * (Math.abs(x) * this._asin_a + this._asin_b) + this._asin_c) + 
+			Math.signum(x) * (this._asin_d - Math.sqrt(1 - x * x));
+	},
+	acos: function (x) {
+		return this.HALF_PI - this.asin(x);
+	},
+	atan: function (x) {
+		return (Math.abs(x) < 1) ? x / (1 + this._atan_a * x * x) : Math.signum(x) * this.HALF_PI - x / (x * x + this._atan_a);
+	}
+};
+
+var timer = {
+  _delay: 0,
+  _repeat: false,
+  _acc: 0,
+  _done: false,
+  _stopped: false,
+  execute: null,
+  create: function (delay, repeat, executeFunction) {
+    var self = Object.create(this);
+    self._delay = delay;
+    if (typeof repeat === "boolean") {
+      self._repeat = repeat;
+    }
+    self.execute = executeFunction;
+    return self;
+  },
+  update: function update(delta) {
+    if (!this._done && !this._stopped) {
+      this._acc += delta;
+
+      if (this._acc >= this._delay) {
+        this._acc -= this._delay;
+
+        if (this._repeat) {
+          this.reset();
+        } else {
+          this._done = true;
+        }
+
+        if (typeof this.execute === "function") {
+          this.execute();
+        }
+      }
+    }
+  },
+  reset: function reset() {
+    this._stopped = false;
+    this._done = false;
+    this._acc = 0;
+  },
+  isDone: function isDone() {
+    return this._done;
+  },
+  isRunning: function isRunning() {
+    return !this._done && this._acc < this._delay && !this._stopped;
+  },
+  stop: function stop() {
+    this._stopped = true;
+  },
+  setDelay: function setDelay(delay) {
+    this._delay = delay;
+  },
+  getPercentageRemaining: function getPercentageRemaining() {
+    if (this._done)
+      return 100;
+    else if (this._stopped)
+      return 0;
+    else
+      return 1 - (this._delay - this._acc) / this._delay;
+  },
+  getDelay: function getDelay() {
+    return this._delay;
+  }
+};
+
+function uuid() {
+  var uuid4 = "", i, random;
+  for (i = 0; i < 32; i++) {
+    random = Math.random() * 16 | 0;
+
+    if (i == 8 || i == 12 || i == 16 || i == 20) {
+      uuid4 += "-";
+    }
+    uuid4 += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
+  }
+  return uuid4;
+}
+
 /**
  * An Aspects is used by systems as a matcher against entities, to check if a system is
  * interested in an entity. Aspects define what sort of component types an entity must
@@ -145,41 +801,6 @@ var Aspect = (function () {
 })();
 
 /**
- * base prototype to be extended
- * @type {prototype|*}
- */
-var base = Object.create(Object.prototype);
-
-/**
- * Extend this object with one or more objects.
- * Copy all property to extending object (concatenation)
- * If private members are needed, use blueprint/closure
- */
-Object.defineProperty(base, "extend", {
-  value: function () {
-    var hasOwnProperty = Object.hasOwnProperty;
-    var object = Object.create(this);
-    var length = arguments.length;
-    var index = length;
-
-    while (index) {
-      var extension = arguments[length - (index--)];
-
-      for (var property in extension) {
-        if (hasOwnProperty.call(extension, property) || typeof object[property] === "undefined") {
-          object[property] = extension[property];
-        }
-      }
-    }
-
-    return object;
-  },
-  configurable: false,
-  enumerable: false,
-  writable: true
-});
-
-/**
  * A tag class. All components in the system must extend this class.
  * Extended components are required to set a different componentType for each component type
  */
@@ -195,84 +816,6 @@ Object.defineProperty(component, "componentType", {
   enumerable: false,
   writable: false
 });
-
-var componentManager = (function () {
-  var componentManagerClosure = function () {
-    var componentsByType = bag();
-    var deleted = bag();
-
-    function removeComponentsOfEntity(entity) {
-      var componentBits = entity.getComponentBits();
-      for (var i = componentBits.nextSetBit(0); i >= 0; i = componentBits.nextSetBit(i + 1)) {
-        componentsByType.get(i).set(entity.getId(), null);
-      }
-      componentBits.clear();
-    }
-
-    this.addComponent = function addComponent(entity, componentType, component) {
-      var components = this.getComponentsByType(componentType);
-      components.set(entity.getId(), component);
-      entity.getComponentBits().set(componentType.getIndex());
-    };
-
-    this.removeComponent = function removeComponent(entity, componentType) {
-      var componentBits = entity.getComponentBits();
-      if (componentBits.get(componentType.getIndex())) {
-        componentsByType.get(componentType.getIndex()).set(entity.getId(), null);
-        componentBits.clear(componentType.getIndex());
-      }
-    };
-
-    this.getComponentsByType = function getComponentsByType(componentType) {
-      var components = componentsByType.get(componentType.getIndex());
-      if (!components) {
-        components = bag();
-        componentsByType.set(componentType.getIndex(), components);
-      }
-      return components;
-    };
-
-    this.getComponent = function getComponent(entity, componentType) {
-      var components = componentsByType.get(componentType.getIndex());
-      if (components) {
-        return components.get(entity.getId());
-      }
-      return null;
-    };
-
-    this.getComponentsFor = function getComponentsFor(entity, fillBag) {
-      var componentBits = entity.getComponentBits();
-
-      for (var i = componentBits.nextSetBit(0); i >= 0; i = componentBits.nextSetBit(i + 1)) {
-        fillBag.add(componentsByType.get(i).get(entity.getId()));
-      }
-
-      return fillBag;
-    };
-
-    this.deleted = function deletedFunc(entity) {
-      deleted.add(entity);
-    };
-
-    this.clean = function clean() {
-      if (deleted.size() > 0) {
-        for (var i = 0; deleted.size() > i; i++) {
-          removeComponentsOfEntity(deleted.get(i));
-        }
-        deleted.clear();
-      }
-    };
-  };
-
-  var componentManager = ExtendHelper.extendManager(manager, "componentManager", {
-    create: function () {
-      var self = Object.create(this);
-      componentManagerClosure.call(self);
-      return self;
-    }
-  });
-  return componentManager;
-})();
 
 var ComponentMapper = (function () {
   var closure = function (componentType, world) {
@@ -579,138 +1122,6 @@ var entity = (function () {
   return entity;
 })();
 
-var entityManager = (function () {
-  var identifierPool = function () {
-    var ids = bag();
-    var nextAvailableId = 0;
-    return {
-      checkOut: function () {
-        if (ids.size() > 0) {
-          return ids.removeLast();
-        }
-        return nextAvailableId++;
-      },
-      checkIn: function (id) {
-        ids.add(id);
-      }
-    };
-  };
-  var entityManagerClosure = function () {
-    var entities = bag();
-    var disabled = bitSet();
-    var active = 0;
-    var added = 0;
-    var created = 0;
-    var deleted = 0;
-    var idPool = identifierPool();
-
-    this.createEntityInstance = function createEntityInstance() {
-      var e = entity.create(this.getWorld(), idPool.checkOut());
-      created++;
-      return e;
-    };
-
-    this.added = function addedFunc(entity) {
-      active++;
-      added++;
-      entities.set(entity.getId(), entity);
-    };
-
-    this.enabled = function enabled(entity) {
-      disabled.clear(entity.getId());
-    };
-
-    this.disabled = function disabledFunc(entity) {
-      disabled.set(entity.getId());
-    };
-
-    this.deleted = function deletedFunc(entity) {
-      entities.set(entity.getId(), null);
-
-      disabled.clear(entity.getId());
-
-      idPool.checkIn(entity.getId());
-
-      active--;
-      deleted++;
-    };
-
-    /**
-     * Check if this entity is active.
-     * Active means the entity is being actively processed.
-     *
-     * @param entityId
-     * @return true if active, false if not.
-     */
-    this.isActive = function isActive(entityId) {
-      return entities.get(entityId) ? true : false;
-    };
-
-    /**
-     * Check if the specified entityId is enabled.
-     *
-     * @param entityId
-     * @return true if the entity is enabled, false if it is disabled.
-     */
-    this.isEnabled = function isEnabled(entityId) {
-      return !disabled.get(entityId);
-    };
-
-    /**
-     * Get a entity with this id.
-     *
-     * @param entityId
-     * @return the entity
-     */
-    this.getEntity = function getEntity(entityId) {
-      return entities.get(entityId);
-    };
-
-    /**
-     * Get how many entities are active in this world.
-     * @return how many entities are currently active.
-     */
-    this.getActiveEntityCount = function getActiveEntityCount() {
-      return active;
-    };
-
-    /**
-     * Get how many entities have been created in the world since start.
-     * Note: A created entity may not have been added to the world, thus
-     * created count is always equal or larger than added count.
-     * @return how many entities have been created since start.
-     */
-    this.getTotalCreated = function getTotalCreated() {
-      return created;
-    };
-
-    /**
-     * Get how many entities have been added to the world since start.
-     * @return how many entities have been added.
-     */
-    this.getTotalAdded = function getTotalAdded() {
-      return added;
-    };
-
-    /**
-     * Get how many entities have been deleted from the world since start.
-     * @return how many entities have been deleted since start.
-     */
-    this.getTotalDeleted = function getTotalDeleted() {
-      return deleted;
-    };
-  };
-
-  var entityManager = ExtendHelper.extendManager(manager, "entityManager", {
-    create: function () {
-      var self = Object.create(this);
-      entityManagerClosure.call(self);
-      return self;
-    }
-  });
-  return entityManager;
-})();
-
 var entityObserver = base.extend({
   added: function (e) {
   },
@@ -915,74 +1326,6 @@ var entitySystem = (function () {
   return entitySystem;
 })();
 
-var ExtendHelper = (function () {
-  function extend(base, typeInfo) {
-    var extensions = Array.prototype.slice.call(arguments, 2);
-    var extended = base.extend.apply(base, extensions);
-    Object.defineProperty(extended, typeInfo.name, {
-      value: typeInfo.value,
-      configurable: true,
-      enumerable: false,
-      writable: false
-    });
-    return extended;
-  }
-
-  return {
-    extendSystem: function (baseSystem, newSystemType, extensions) {
-      var args = [];
-      args.length = arguments.length;
-      args[0] = arguments[0];
-      args[1] = {
-        name: "systemType",
-        value: newSystemType
-      };
-      for (var i = 2; i < arguments.length; i++) {
-        args.push(arguments[i]);
-      }
-      return extend.apply(null, args);
-    },
-    extendManager: function (baseManager, newManagerType, extensions) {
-      var args = [];
-      args.length = arguments.length;
-      args[0] = arguments[0];
-      args[1] = {
-        name: "managerType",
-        value: newManagerType
-      };
-      for (var i = 2; i < arguments.length; i++) {
-        args.push(arguments[i]);
-      }
-      return extend.apply(null, arguments);
-    },
-    extendComponent: function (baseComponent, newComponentType, extensions) {
-      var args = [];
-      args.length = arguments.length;
-      var start = 2;
-      if (typeof baseComponent === "string") {
-        args[0] = d8.component;
-        args[1] = {
-          name: "componentType",
-          value: baseComponent
-        };
-        start = 1;
-      } else {
-        args[0] = baseComponent;
-        args[1] = {
-          name: "componentType",
-          value: newComponentType
-        };
-      }
-      for (var i = start; i < arguments.length; i++) {
-        if (arguments[i]) {
-          args.push(arguments[i]);
-        }
-      }
-      return extend.apply(null, args);
-    }
-  };
-})();
-
 /**
  * Manager.
  *
@@ -1008,6 +1351,216 @@ Object.defineProperty(manager, "managerType", {
   enumerable: false,
   writable: false
 });
+
+var componentManager = (function () {
+  var componentManagerClosure = function () {
+    var componentsByType = bag();
+    var deleted = bag();
+
+    function removeComponentsOfEntity(entity) {
+      var componentBits = entity.getComponentBits();
+      for (var i = componentBits.nextSetBit(0); i >= 0; i = componentBits.nextSetBit(i + 1)) {
+        componentsByType.get(i).set(entity.getId(), null);
+      }
+      componentBits.clear();
+    }
+
+    this.addComponent = function addComponent(entity, componentType, component) {
+      var components = this.getComponentsByType(componentType);
+      components.set(entity.getId(), component);
+      entity.getComponentBits().set(componentType.getIndex());
+    };
+
+    this.removeComponent = function removeComponent(entity, componentType) {
+      var componentBits = entity.getComponentBits();
+      if (componentBits.get(componentType.getIndex())) {
+        componentsByType.get(componentType.getIndex()).set(entity.getId(), null);
+        componentBits.clear(componentType.getIndex());
+      }
+    };
+
+    this.getComponentsByType = function getComponentsByType(componentType) {
+      var components = componentsByType.get(componentType.getIndex());
+      if (!components) {
+        components = bag();
+        componentsByType.set(componentType.getIndex(), components);
+      }
+      return components;
+    };
+
+    this.getComponent = function getComponent(entity, componentType) {
+      var components = componentsByType.get(componentType.getIndex());
+      if (components) {
+        return components.get(entity.getId());
+      }
+      return null;
+    };
+
+    this.getComponentsFor = function getComponentsFor(entity, fillBag) {
+      var componentBits = entity.getComponentBits();
+
+      for (var i = componentBits.nextSetBit(0); i >= 0; i = componentBits.nextSetBit(i + 1)) {
+        fillBag.add(componentsByType.get(i).get(entity.getId()));
+      }
+
+      return fillBag;
+    };
+
+    this.deleted = function deletedFunc(entity) {
+      deleted.add(entity);
+    };
+
+    this.clean = function clean() {
+      if (deleted.size() > 0) {
+        for (var i = 0; deleted.size() > i; i++) {
+          removeComponentsOfEntity(deleted.get(i));
+        }
+        deleted.clear();
+      }
+    };
+  };
+
+  var componentManager = ExtendHelper.extendManager(manager, "componentManager", {
+    create: function () {
+      var self = Object.create(this);
+      componentManagerClosure.call(self);
+      return self;
+    }
+  });
+  return componentManager;
+})();
+
+var entityManager = (function () {
+  var identifierPool = function () {
+    var ids = bag();
+    var nextAvailableId = 0;
+    return {
+      checkOut: function () {
+        if (ids.size() > 0) {
+          return ids.removeLast();
+        }
+        return nextAvailableId++;
+      },
+      checkIn: function (id) {
+        ids.add(id);
+      }
+    };
+  };
+  var entityManagerClosure = function () {
+    var entities = bag();
+    var disabled = bitSet();
+    var active = 0;
+    var added = 0;
+    var created = 0;
+    var deleted = 0;
+    var idPool = identifierPool();
+
+    this.createEntityInstance = function createEntityInstance() {
+      var e = entity.create(this.getWorld(), idPool.checkOut());
+      created++;
+      return e;
+    };
+
+    this.added = function addedFunc(entity) {
+      active++;
+      added++;
+      entities.set(entity.getId(), entity);
+    };
+
+    this.enabled = function enabled(entity) {
+      disabled.clear(entity.getId());
+    };
+
+    this.disabled = function disabledFunc(entity) {
+      disabled.set(entity.getId());
+    };
+
+    this.deleted = function deletedFunc(entity) {
+      entities.set(entity.getId(), null);
+
+      disabled.clear(entity.getId());
+
+      idPool.checkIn(entity.getId());
+
+      active--;
+      deleted++;
+    };
+
+    /**
+     * Check if this entity is active.
+     * Active means the entity is being actively processed.
+     *
+     * @param entityId
+     * @return true if active, false if not.
+     */
+    this.isActive = function isActive(entityId) {
+      return entities.get(entityId) ? true : false;
+    };
+
+    /**
+     * Check if the specified entityId is enabled.
+     *
+     * @param entityId
+     * @return true if the entity is enabled, false if it is disabled.
+     */
+    this.isEnabled = function isEnabled(entityId) {
+      return !disabled.get(entityId);
+    };
+
+    /**
+     * Get a entity with this id.
+     *
+     * @param entityId
+     * @return the entity
+     */
+    this.getEntity = function getEntity(entityId) {
+      return entities.get(entityId);
+    };
+
+    /**
+     * Get how many entities are active in this world.
+     * @return how many entities are currently active.
+     */
+    this.getActiveEntityCount = function getActiveEntityCount() {
+      return active;
+    };
+
+    /**
+     * Get how many entities have been created in the world since start.
+     * Note: A created entity may not have been added to the world, thus
+     * created count is always equal or larger than added count.
+     * @return how many entities have been created since start.
+     */
+    this.getTotalCreated = function getTotalCreated() {
+      return created;
+    };
+
+    /**
+     * Get how many entities have been added to the world since start.
+     * @return how many entities have been added.
+     */
+    this.getTotalAdded = function getTotalAdded() {
+      return added;
+    };
+
+    /**
+     * Get how many entities have been deleted from the world since start.
+     * @return how many entities have been deleted since start.
+     */
+    this.getTotalDeleted = function getTotalDeleted() {
+      return deleted;
+    };
+  };
+
+  var entityManager = ExtendHelper.extendManager(manager, "entityManager", {
+    create: function () {
+      var self = Object.create(this);
+      entityManagerClosure.call(self);
+      return self;
+    }
+  });
+  return entityManager;
+})();
 
 /**
  * If you need to group your entities together, e.g. tanks going into "units" group or explosions into "effects",
@@ -1583,569 +2136,6 @@ var voidEntitySystem = ExtendHelper.extendSystem(entitySystem, "voidEntitySystem
 });
 
 /**
- * Collection type a bit like ArrayList but does not preserve the order of its
- * entities, speedwise it is very good, especially suited for games.
- */
-var bag = function (capacity) {
-  var data = [];
-  var pSize = 0;
-  if (capacity) {
-    data.length = capacity;
-  } else {
-    data.length = 64;
-  }
-
-  /**
-   * Removes the element at the specified position in this Bag. does this by
-   * overwriting it was last element then removing last element
-   *
-   * @param index
-   *            the index of element to be removed
-   * @return element that was removed from the Bag; undefined if index is equal or greater than the bag's size
-   */
-  var removeByIndex = function (index) {
-    if (index >= pSize) {
-      return undefined;
-    }
-    var tmp = data[index];
-    data[index] = data[--pSize];
-    data[pSize] = null;
-    return tmp;
-  };
-
-  /**
-   * Remove and return the last object in the bag.
-   *
-   * @return the last object in the bag, null if empty.
-   */
-  var removeLast = function () {
-    if (pSize > 0) {
-      var tmp = data[--pSize];
-      data[pSize] = null;
-      return tmp;
-    }
-    return null;
-  };
-
-  /**
-   * Removes the first occurrence of the specified element from this Bag, if
-   * it is present. If the Bag does not contain the element, it is unchanged.
-   * does this by overwriting it was last element then removing last element
-   *
-   * @param e
-   *            element to be removed from this list, if present
-   * @return <tt>true</tt> if this list contained the specified element
-   */
-  var removeElement = function (e) {
-    var tmp;
-    for (var i = 0; i < pSize; i++) {
-      tmp = data[i];
-      if (e == tmp) {
-        data[i] = data[--pSize];
-        data[pSize] = null;
-        return true;
-      }
-    }
-    return false;
-  };
-
-  /**
-   * Check if bag contains this element.
-   *
-   * @param e
-   * @return
-   */
-  var contains = function (e) {
-    for (var i = 0; i < pSize; i++) {
-      if (e == data[i]) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  /**
-   * Removes from this Bag all of its elements that are contained in the
-   * specified Bag.
-   *
-   * @param removeBag
-   *            Bag containing elements to be removed from this Bag
-   * @return {@code true} if this Bag changed as a result of the call
-   */
-  var removeAll = function (removeBag) {
-    var modified = false;
-    var tmp;
-    for (var i = 0; i < removeBag.size(); i++) {
-      tmp = removeBag.get(i);
-      for (var j = 0; j < pSize; j++) {
-        if (tmp == data[j]) {
-          removeByIndex(j);
-          j--;
-          modified = true;
-          break;
-        }
-      }
-    }
-
-    return modified;
-  };
-
-  /**
-   * Returns the element at the specified position in Bag.
-   *
-   * @param index
-   *            index of the element to return
-   * @return the element at the specified position in bag
-   */
-  var get = function (index) {
-    return data[index];
-  };
-
-  /**
-   * Returns the number of elements in this bag.
-   *
-   * @return the number of elements in this bag
-   */
-  var size = function () {
-    return pSize;
-  };
-
-  /**
-   * Returns the number of elements the bag can hold without growing.
-   *
-   * @return the number of elements the bag can hold without growing.
-   */
-  var getCapacity = function () {
-    return data.length;
-  };
-
-  /**
-   * Checks if the internal storage supports this index.
-   *
-   * @param index
-   * @return
-   */
-  var isIndexWithinBounds = function (index) {
-    return index < getCapacity();
-  };
-
-  /**
-   * Returns true if this list contains no elements.
-   *
-   * @return true if this list contains no elements
-   */
-  var isEmpty = function () {
-    return pSize === 0;
-  };
-
-  /**
-   * Adds the specified element to the end of this bag. if needed also
-   * increases the capacity of the bag.
-   *
-   * @param e
-   *            element to be added to this list
-   */
-  var add = function (e) {
-    if (pSize === data.length) {
-      grow();
-    }
-    data[pSize++] = e;
-  };
-
-  /**
-   * Set element at specified index in the bag.
-   *
-   * @param index position of element
-   * @param e the element
-   */
-  var set = function (index, e) {
-    if (index >= data.length) {
-      grow(index * 2);
-    }
-    if (index > pSize) {
-      pSize = index + 1;
-    }
-    data[index] = e;
-  };
-
-  function grow(newCapacity) {
-    if (!newCapacity) {
-      newCapacity = Math.ceil((data.length * 3) / 2 + 1);
-    }
-    data.length = newCapacity;
-  }
-
-  /**
-   * Removes all of the elements from this bag. The bag will be empty after
-   * this call returns.
-   */
-  var clear = function () {
-    for (var i = 0; i < data.length; i++) {
-      data[i] = null;
-    }
-    pSize = 0;
-  };
-
-  /**
-   * Add all items into this bag.
-   * @param items a bag of items to add
-   */
-  var addAll = function (items) {
-    for (var i = 0; i < items.size(); i++) {
-      add(items.get(i));
-    }
-  };
-
-  return {
-    add: add,
-    addAll: addAll,
-    removeByIndex: removeByIndex,
-    removeLast: removeLast,
-    removeElement: removeElement,
-    removeAll: removeAll,
-    clear: clear,
-    get: get,
-    set: set,
-    getCapacity: getCapacity,
-    size: size,
-    contains: contains,
-    isIndexWithinBounds: isIndexWithinBounds,
-    isEmpty: isEmpty
-  };
-};
-
-/**
- * Bitset implementation based on https://github.com/inexplicable/bitset
- */
-function bitSet() {
-  var BITS_OF_A_WORD = 32,
-    SHIFTS_OF_A_WORD = 5;
-
-  var _words = [];
-
-  var whichWord = function (pos) {
-    return pos >> SHIFTS_OF_A_WORD;
-  };
-  var mask = function (pos) {
-    return 1 << (pos & 31);
-  };
-
-  var getWords = function () {
-    return _words;
-  };
-  var set = function (pos) {
-    if (pos < 0) {
-      return;
-    }
-    var which = whichWord(pos);
-    _words[which] = _words[which] | mask(pos);
-    return _words[which];
-  };
-  var clear = function (pos) {
-    if (pos < 0) {
-      return;
-    }
-    var which = whichWord(pos);
-    _words[which] = _words[which] & ~mask(pos);
-    return _words[which];
-  };
-  var get = function (pos) {
-    if (pos < 0) {
-      return undefined;
-    }
-    var which = whichWord(pos);
-    return _words[which] & mask(pos);
-  };
-  var maxWords = function () {
-    return _words.length;
-  };
-  var cardinality = function () {
-    var next, sum = 0;
-    for (next = 0; next < _words.length; next += 1) {
-      var nextWord = _words[next] || 0;
-      //this loops only the number of set bits, not 32 constant all the time!
-      for (var bits = nextWord; bits !== 0; bits &= (bits - 1)) {
-        sum += 1;
-      }
-    }
-    return sum;
-  };
-  var or = function (set) {
-    if (this === set) {
-      return this;
-    }
-
-    var next, commons = Math.min(maxWords(), set.maxWords());
-    var setWords = set.getWords();
-    for (next = 0; next < commons; next += 1) {
-      _words[next] = (_words[next] || 0) | (setWords[next] || 0);
-    }
-    if (commons < set.maxWords()) {
-      _words = _words.concat(setWords.slice(commons, set.maxWords()));
-    }
-    return this;
-  };
-  var and = function (set) {
-    if (this === set) {
-      return this;
-    }
-
-    var next,
-      commons = Math.min(maxWords(), set.maxWords());
-    var setWords = set.getWords();
-    for (next = 0; next < commons; next += 1) {
-      _words[next] = (_words[next] || 0) & (setWords[next] || 0);
-    }
-    if (commons > set.maxWords()) {
-      var length = Math.max(Math.ceil((set.maxWords() - commons)), 0);
-      var idx = 0;
-      var range = new Array(length);
-      while (idx < length) {
-        range[idx++] = commons;
-        commons += 1;
-      }
-      for (var i = 0; i < range.length; i++) {
-        _words.pop();
-      }
-    }
-    return this;
-  };
-  var xor = function (set) {
-    var next, commons = Math.min(maxWords(), set.maxWords());
-    var setWords = set.getWords();
-    for (next = 0; next < commons; next += 1) {
-      _words[next] = (_words[next] || 0) ^ (setWords[next] || 0);
-    }
-
-    var mw;
-    if (commons < set.maxWords()) {
-      mw = set.maxWords();
-      for (next = commons; next < mw; next += 1) {
-        _words[next] = (setWords[next] || 0) ^ 0;
-      }
-    } else {
-      mw = maxWords();
-      for (next = commons; next < mw; next += 1) {
-        _words[next] = (_words[next] || 0) ^ 0;
-      }
-    }
-    return this;
-  };
-  var nextSetBit = function (pos) {
-    var next = whichWord(pos);
-    //beyond max words
-    if (next >= _words.length) {
-      return -1;
-    }
-    //the very first word
-    var firstWord = _words[next],
-      mw = maxWords(),
-      bit;
-    if (firstWord) {
-      for (bit = pos & 31; bit < BITS_OF_A_WORD; bit += 1) {
-        if ((firstWord & mask(bit))) {
-          return (next << SHIFTS_OF_A_WORD) + bit;
-        }
-      }
-    }
-    for (next = next + 1; next < mw; next += 1) {
-      var nextWord = _words[next];
-      if (nextWord) {
-        for (bit = 0; bit < BITS_OF_A_WORD; bit += 1) {
-          if ((nextWord & mask(bit)) !== 0) {
-            return (next << SHIFTS_OF_A_WORD) + bit;
-          }
-        }
-      }
-    }
-    return -1;
-  };
-  var prevSetBit = function (pos) {
-    var prev = whichWord(pos);
-    //beyond max words
-    if (prev >= _words.length) {
-      return -1;
-    }
-    //the very last word
-    var lastWord = _words[prev],
-      bit;
-    if (lastWord) {
-      for (bit = pos & 31; bit >= 0; bit -= 1) {
-        if ((lastWord & mask(bit))) {
-          return (prev << SHIFTS_OF_A_WORD) + bit;
-        }
-      }
-    }
-    for (prev = prev - 1; prev >= 0; prev -= 1) {
-      var prevWord = _words[prev];
-      if (prevWord) {
-        for (bit = BITS_OF_A_WORD - 1; bit >= 0; bit -= 1) {
-          if ((prevWord & mask(bit)) !== 0) {
-            return (prev << SHIFTS_OF_A_WORD) + bit;
-          }
-        }
-      }
-    }
-    return -1;
-  };
-  var toString = function (radix) {
-    radix = radix || 10;
-    var tmp = [];
-    for (var i = 0; i < _words.length; i++) {
-      tmp.push((_words[i] || 0).toString(radix));
-    }
-    return '[' + tmp.join(', ') + ']';
-  };
-  var intersects = function (set) {
-    for (var i = Math.min(maxWords(), set.maxWords()) - 1; i >= 0; i--) {
-      if (_words[i] & set.getWords()[i]) {
-        return true;
-      }
-    }
-    return false;
-  };
-  var isEmpty = function () {
-    return _words.length === 0;
-  };
-
-  return {
-    getWords: getWords,
-    set: set,
-    get: get,
-    clear: clear,
-    maxWords: maxWords,
-    cardinality: cardinality,
-    or: or,
-    and: and,
-    xor: xor,
-    nextSetBit: nextSetBit,
-    prevSetBit: prevSetBit,
-    intersects: intersects,
-    isEmpty: isEmpty,
-    toString: toString
-  };
-}
-
-if (!Math.signum) {
-	Math.signum = function (x) {
-		return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
-	};
-}
-
-var FastMath = {
-	_sin_a: -4 / this.SQUARED_PI,
-	_sin_b: 4 / Math.PI,
-	_sin_p: 9 / 40,
-	_asin_a: -0.0481295276831013447,
-	_asin_b: -0.343835993947915197,
-	_asin_c: 0.962761848425913169,
-	_asin_d: 1.00138940860107040,
-
-	SQUARED_PI: Math.PI * Math.PI,
-	HALF_PI: Math.PI * 0.5,
-	TWO_PI: Math.PI * 2,
-	THREE_PI_HALVES: this.TWO_PI - this.HALF_PI,
-	cos: function (x) {
-		return this.sin(x + ((x > this.HALF_PI) ? -this.THREE_PI_HALVES : this.HALF_PI));
-	},
-	sin: function (x) {
-		x = this._sin_a * x * Math.abs(x) + this._sin_b * x;
-		return this._sin_p * (x * Math.abs(x) - x) + x;
-	},
-	tan: function (x) {
-		return sin(x) / cos(x);
-	},
-	asin: function (x) {
-		return x * (Math.abs(x) * (Math.abs(x) * this._asin_a + this._asin_b) + this._asin_c) + 
-			Math.signum(x) * (this._asin_d - Math.sqrt(1 - x * x));
-	},
-	acos: function (x) {
-		return this.HALF_PI - this.asin(x);
-	},
-	atan: function (x) {
-		return (Math.abs(x) < 1) ? x / (1 + this._atan_a * x * x) : Math.signum(x) * this.HALF_PI - x / (x * x + this._atan_a);
-	}
-};
-
-var timer = {
-  _delay: 0,
-  _repeat: false,
-  _acc: 0,
-  _done: false,
-  _stopped: false,
-  execute: null,
-  create: function (delay, repeat, executeFunction) {
-    var self = Object.create(this);
-    self._delay = delay;
-    if (typeof repeat === "boolean") {
-      self._repeat = repeat;
-    }
-    self.execute = executeFunction;
-    return self;
-  },
-  update: function update(delta) {
-    if (!this._done && !this._stopped) {
-      this._acc += delta;
-
-      if (this._acc >= this._delay) {
-        this._acc -= this._delay;
-
-        if (this._repeat) {
-          this.reset();
-        } else {
-          this._done = true;
-        }
-
-        if (typeof this.execute === "function") {
-          this.execute();
-        }
-      }
-    }
-  },
-  reset: function reset() {
-    this._stopped = false;
-    this._done = false;
-    this._acc = 0;
-  },
-  isDone: function isDone() {
-    return this._done;
-  },
-  isRunning: function isRunning() {
-    return !this._done && this._acc < this._delay && !this._stopped;
-  },
-  stop: function stop() {
-    this._stopped = true;
-  },
-  setDelay: function setDelay(delay) {
-    this._delay = delay;
-  },
-  getPercentageRemaining: function getPercentageRemaining() {
-    if (this._done)
-      return 100;
-    else if (this._stopped)
-      return 0;
-    else
-      return 1 - (this._delay - this._acc) / this._delay;
-  },
-  getDelay: function getDelay() {
-    return this._delay;
-  }
-};
-
-function uuid() {
-  var uuid4 = "", i, random;
-  for (i = 0; i < 32; i++) {
-    random = Math.random() * 16 | 0;
-
-    if (i == 8 || i == 12 || i == 16 || i == 20) {
-      uuid4 += "-";
-    }
-    uuid4 += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
-  }
-  return uuid4;
-}
-
-/**
  * The primary instance for the framework. It contains all the managers.
  *
  * You must use this to create, delete and retrieve entities.
@@ -2157,8 +2147,8 @@ function uuid() {
  */
 var world = (function () {
   var worldClosure = function () {
-    var entityManager = entityManager.create();
-    var componentManager = componentManager.create();
+    var entityManager = artemis.entityManager.create();
+    var componentManager = artemis.componentManager.create();
 
     var delta = 0;
     var added = bag();
@@ -2475,6 +2465,7 @@ var artemis = {
   bitSet: bitSet,
   fastMath: FastMath,
   timer: timer,
+  ExtendHelper: ExtendHelper,
   // main classes
   world: world,
   manager: manager,
@@ -2488,7 +2479,6 @@ var artemis = {
   Aspect: Aspect,
   ComponentMapper: ComponentMapper,
   ComponentType: ComponentType,
-  ExtendHelper: ExtendHelper,
   // managers
   groupManager: groupManager,
   playerManager: playerManager,

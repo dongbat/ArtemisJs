@@ -1,5 +1,8 @@
 module.exports = function (grunt) {
-  var files = ['lib/**/!(artemis).js', 'lib/artemis.js'];
+//  var files = ['lib/**/!(artemis).js', 'lib/artemis.js'];
+  var files = ['lib/utils/*.js', 'lib/!(artemis|world|componentManager|entityManager).js', 
+    'lib/componentManager.js', 'lib/entityManager.js', 'lib/managers/*.js',
+    'lib/systems/*.js', 'lib/world.js', 'lib/artemis.js'];
   var webGlobalVar = 'artemis';
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
