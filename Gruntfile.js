@@ -25,6 +25,10 @@ module.exports = function (grunt) {
       dist: {
         src: files,
         dest: '<%= pkg.name %>.js'
+      },
+      example: {
+        src: files,
+        dest: 'example/src/<%= pkg.name %>.js'
       }
     },
     jshint: {
