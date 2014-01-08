@@ -32,7 +32,13 @@ or
 
 ####AMD
 
-TODO
+RequireJs example:
+
+```
+require(["Artemis"], function(artemis) {
+  // do something here
+});
+```
 
 ####CommonJs
 
@@ -113,3 +119,9 @@ The example is the spaceship warrior example port. It is written using [Cocos2d-
 To run it, you will need the Cocos2d-html5 version. You can download the newest version [here](http://www.cocos2d-x.org/download). The newest version at the moment is v2.2.1.
 
 Then simply copy the example folder into the Cocos2d-html5 folder and run `index.html` file. It should run with no problem on Firefox, you might need a server to run on other browser.
+
+***
+
+##Documentation
+
+Visit the [wiki]{https://github.com/dongbat/ArtemisJs/wiki}
