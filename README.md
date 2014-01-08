@@ -124,4 +124,4 @@ Then simply copy the example folder into the Cocos2d-html5 folder and run `index
 
 ##Documentation
 
-Visit the [wiki]{https://github.com/dongbat/ArtemisJs/wiki}
+Visit the [wiki](https://github.com/dongbat/ArtemisJs/wiki).
