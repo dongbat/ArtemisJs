@@ -1,6 +1,19 @@
 {
   "name": "ArtemisJs",
   "version": "0.0.1",
+  "description": "A Javascript port of the entity component framwork Artemis",
+  "homepage": "https://github.com/dongbat/ArtemisJs",
+  "bugs": {
+    "url": "https://github.com/dongbat/ArtemisJs/issues",
+    "email": "artemisjs@dongbat.com"
+  },
+  "license": "BSD-2-Clause",
+  "author": "Thanh <thanh@dongbat.com>",
+  "main": "./ArtemisJs.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dongbat/ArtemisJs.git"
+  },
   "devDependencies": {
     "grunt": "~0.4.2",
     "grunt-contrib-jshint": "~0.8.0",
