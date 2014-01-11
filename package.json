@@ -1,5 +1,5 @@
 {
-  "name": "ArtemisJs",
+  "name": "artemisjs",
   "version": "0.0.1",
   "description": "A Javascript port of the entity component framwork Artemis",
   "homepage": "https://github.com/dongbat/ArtemisJs",
@@ -8,7 +8,7 @@
     "email": "artemisjs@dongbat.com"
   },
   "license": "BSD-2-Clause",
-  "author": "Thanh <thanh@dongbat.com>",
+  "author": "Dao Duy Thanh <thanh@dongbat.com>",
   "main": "./ArtemisJs.js",
   "repository": {
     "type": "git",
