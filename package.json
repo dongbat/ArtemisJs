@@ -7,7 +7,7 @@
     "url": "https://github.com/dongbat/ArtemisJs/issues",
     "email": "artemisjs@dongbat.com"
   },
-  "license": "BSD-2-Clause",
+  "license": "MIT",
   "author": "Dao Duy Thanh <thanh@dongbat.com>",
   "main": "./ArtemisJs.js",
   "repository": {
