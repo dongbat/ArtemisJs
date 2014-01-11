@@ -1,6 +1,6 @@
 {
   "name": "artemisjs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Javascript port of the entity component framwork Artemis",
   "homepage": "https://github.com/dongbat/ArtemisJs",
   "bugs": {
